@@ -1,4 +1,4 @@
-name: pbl1
+name: truple_practice
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -30,12 +30,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  table_calendar: ^3.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  firebase_core: ^3.6.0
+  cloud_firestore: ^5.4.3
+  firebase_auth: ^5.3.1
+  random_string: ^2.3.1
+  google_sign_in: ^6.2.1
+  google_maps_flutter: ^2.9.0
+  google_places_flutter: ^2.0.9
 
+  http: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -57,6 +64,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/images/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
