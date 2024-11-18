@@ -35,15 +35,27 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  // "나의 여행" 페이지로 이동하기 위한 메서드
+  void navigateToMyTravelPage() {
+    setState(() {
+      _selectedIndex = 1;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent, // 배경색 투명 설정
-      body: _selectedIndex == 0
-          ? HomePage()
-          : _selectedIndex == 1
-          ? MyTravelPage()
-          : TravelCalendarPage(),
+      backgroundColor: Colors.transparent,
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          HomePage(
+            onNavigateToMyTravel: navigateToMyTravelPage, // HomePage에서 호출될 메서드
+          ),
+          MTPage(),
+          TravelCalendarPage(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
@@ -88,9 +100,19 @@ class _TravelCalendarPageState extends State<TravelCalendarPage> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(45),
           ),
-          child: Text(
-            'ㅇ 신난 고슴도치 님',
-            style: TextStyle(fontSize: 18, color: Colors.black),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 8, // 동그라미 크기 설정
+                backgroundColor: Colors.teal, // 동그라미 색상 설정
+              ),
+              SizedBox(width: 8),
+              Text(
+                '신난 고슴도치 님',
+                style: TextStyle(fontSize: 18, color: Colors.black),
+              ),
+            ],
           ),
         ),
         centerTitle: true,
@@ -117,9 +139,11 @@ class _TravelCalendarPageState extends State<TravelCalendarPage> {
                   ),
                   SizedBox(height: 16),
                   _buildLegend(),
-                  Container(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    child: _buildCalendar(),
+                  Center( // 캘린더를 센터로 위치
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      child: _buildCalendar(),
+                    ),
                   ),
                   SizedBox(height: 16),
                   Text(
@@ -160,8 +184,8 @@ class _TravelCalendarPageState extends State<TravelCalendarPage> {
     return Row(
       children: [
         Container(
-          width: 10,
-          height: 10,
+          width: 20, // 동그라미 크기 설정
+          height: 20, // 동그라미 크기 설정
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
