@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'mt.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onNavigateToMyTravel;
 
-  HomePage({required this.onNavigateToMyTravel});
+  const HomePage({super.key, required this.onNavigateToMyTravel});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -18,13 +17,13 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Container(
-          margin: EdgeInsets.only(top: 15),
-          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          margin: const EdgeInsets.only(top: 15),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(45),
           ),
-          child: Row(
+          child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
@@ -51,11 +50,11 @@ class _HomePageState extends State<HomePage> {
               child: Center(
                 child: PageView(
                   controller: _pageController,
-                  children: [
+                  children: const [
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
+                        SizedBox(
                           width: 350,
                           height: 354,
                           child: TravelCard(
@@ -66,7 +65,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         SizedBox(height: 16),
-                        Container(
+                        SizedBox(
                           width: 350,
                           height: 171,
                           child: TravelCard(
@@ -81,7 +80,7 @@ class _HomePageState extends State<HomePage> {
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
+                        SizedBox(
                           width: 350,
                           height: 354,
                           child: TravelCard(
@@ -92,7 +91,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         SizedBox(height: 16),
-                        Container(
+                        SizedBox(
                           width: 350,
                           height: 171,
                           child: TravelCard(
@@ -112,30 +111,30 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back_ios),
+                  icon: const Icon(Icons.arrow_back_ios),
                   onPressed: () {
                     _pageController.previousPage(
-                      duration: Duration(milliseconds: 300),
+                      duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
                     );
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.add),
+                  icon: const Icon(Icons.add),
                   onPressed: widget.onNavigateToMyTravel, // "나의 여행" 페이지로 이동
                 ),
                 IconButton(
-                  icon: Icon(Icons.arrow_forward_ios),
+                  icon: const Icon(Icons.arrow_forward_ios),
                   onPressed: () {
                     _pageController.nextPage(
-                      duration: Duration(milliseconds: 300),
+                      duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
                     );
                   },
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -149,7 +148,7 @@ class TravelCard extends StatelessWidget {
   final String tag;
   final Color tagColor;
 
-  const TravelCard({
+  const TravelCard({super.key, 
     required this.imagePath,
     required this.isHot,
     required this.tag,
@@ -172,14 +171,14 @@ class TravelCard extends StatelessWidget {
             top: 10,
             left: 10,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: tagColor,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 tag,
-                style: TextStyle(color: Colors.white, fontSize: 12),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
             ),
           ),
