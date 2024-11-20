@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 class Calendar extends StatefulWidget {
   final String calendarId;
 
-  const Calendar({Key? key, required this.calendarId}) : super(key: key);
+  const Calendar({super.key, required this.calendarId});
 
   @override
   _CalendarState createState() => _CalendarState();
@@ -56,6 +56,10 @@ class _CalendarState extends State<Calendar> {
 
         setState(() {
           _dateList = _generateDateList(startDate, endDate);
+          _selectedDay = _dateList.isNotEmpty ? _dateList[0] : null; // 기본 선택 날짜
+          if (_selectedDay != null) {
+            _loadDayItinerary(_selectedDay!); // 기본 날짜의 일정을 불러옴
+          }
         });
       }
     }
@@ -65,9 +69,10 @@ class _CalendarState extends State<Calendar> {
     List<String> dateList = [];
     DateTime currentDate = startDate;
 
-    while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
+    while (currentDate.isBefore(endDate) ||
+        currentDate.isAtSameMomentAs(endDate)) {
       dateList.add(DateFormat('yyyy-MM-dd').format(currentDate));
-      currentDate = currentDate.add(Duration(days: 1));
+      currentDate = currentDate.add(const Duration(days: 1));
     }
 
     return dateList;
@@ -91,7 +96,7 @@ class _CalendarState extends State<Calendar> {
       List<LatLng> polylineCoordinates = [];
 
       for (var placeDoc in placesSnapshot.docs) {
-        final data = placeDoc.data() as Map<String, dynamic>;
+        final data = placeDoc.data();
         final geoPoint = data['location'] as GeoPoint;
         final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
 
@@ -99,7 +104,8 @@ class _CalendarState extends State<Calendar> {
           markerId: MarkerId(placeDoc.id),
           position: latLng,
           infoWindow: InfoWindow(title: data['name']),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+          icon:
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
         ));
 
         polylineCoordinates.add(latLng);
@@ -125,11 +131,22 @@ class _CalendarState extends State<Calendar> {
     );
   }
 
-  Future<void> _updatePlaceOrder(String dayId, List<DocumentSnapshot> places) async {
+  Future<void> _updatePlaceOrder(String dayId) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
-      for (int i = 0; i < places.length; i++) {
-        final placeDoc = places[i];
+      final places = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('calendars')
+          .doc(widget.calendarId)
+          .collection('dates')
+          .doc(dayId)
+          .collection('places')
+          .orderBy('order')
+          .get();
+
+      for (int i = 0; i < places.docs.length; i++) {
+        final placeDoc = places.docs[i];
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userId)
@@ -139,7 +156,7 @@ class _CalendarState extends State<Calendar> {
             .doc(dayId)
             .collection('places')
             .doc(placeDoc.id)
-            .update({'order': i});
+            .update({'order': i}); // 순서를 0부터 재설정
       }
     }
   }
@@ -162,6 +179,7 @@ class _CalendarState extends State<Calendar> {
       ),
       body: Column(
         children: [
+          // Google Map
           Expanded(
             flex: 1,
             child: GoogleMap(
@@ -183,129 +201,170 @@ class _CalendarState extends State<Calendar> {
               },
             ),
           ),
-          Expanded(
-            flex: 1,
+          // 날짜 버튼을 수평으로 배치하여 Google Map 아래에 표시
+          SizedBox(
+            height: 60,
             child: ListView.builder(
+              scrollDirection: Axis.horizontal,
               itemCount: _dateList.length,
               itemBuilder: (context, index) {
                 final dateId = _dateList[index];
-                return ExpansionTile(
-                  title: Text(dateId),
-                  initiallyExpanded: dateId == _selectedDay,
-                  onExpansionChanged: (expanded) {
-                    if (expanded) {
-                      _loadDayItinerary(dateId);
-                    }
-                  },
-                  children: [
-                    FutureBuilder<QuerySnapshot>(
-                      future: FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(FirebaseAuth.instance.currentUser?.uid)
-                          .collection('calendars')
-                          .doc(widget.calendarId)
-                          .collection('dates')
-                          .doc(dateId)
-                          .collection('places')
-                          .orderBy('order')
-                          .get(),
-                      builder: (context, placesSnapshot) {
-                        if (!placesSnapshot.hasData) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-
-                        final places = placesSnapshot.data!.docs;
-
-                        return ReorderableListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: places.length,
-                          onReorder: (oldIndex, newIndex) async {
-                            if (newIndex > oldIndex) {
-                              newIndex -= 1;
-                            }
-                            final item = places.removeAt(oldIndex);
-                            places.insert(newIndex, item);
-                            await _updatePlaceOrder(dateId, places);
-                            setState(() {
-                              _loadDayItinerary(dateId);
-                            });
-                          },
-                          itemBuilder: (context, index) {
-                            final placeDoc = places[index];
-                            final place = placeDoc.data() as Map<String, dynamic>;
-                            final geoPoint = place['location'] as GeoPoint;
-                            final order = place['order'] as int;
-
-                            return ListTile(
-                              key: ValueKey(placeDoc.id),
-                              leading: _isEditing
-                                  ? Icon(Icons.menu) // 수정 모드에서는 햄버거 아이콘
-                                  : CircleAvatar( // 수정 모드가 아닐 때는 order 아이콘
-                                backgroundColor: Colors.grey[200],
-                                child: Text(order.toString()),
-                              ),
-                              title: Text(place['name']),
-                              onTap: () {
-                                _moveCameraToPlace(LatLng(geoPoint.latitude, geoPoint.longitude));
-                              },
-                              trailing: _isEditing
-                                  ? IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () async {
-                                  bool confirm = await showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text("일정 삭제"),
-                                      content: const Text("정말로 삭제하시겠습니까?"),
-                                      actions: [
-                                        TextButton(
-                                          child: const Text("취소"),
-                                          onPressed: () => Navigator.of(context).pop(false),
-                                        ),
-                                        TextButton(
-                                          child: const Text("삭제"),
-                                          onPressed: () => Navigator.of(context).pop(true),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-
-                                  if (confirm) {
-                                    await FirebaseFirestore.instance
-                                        .collection('users')
-                                        .doc(FirebaseAuth.instance.currentUser?.uid)
-                                        .collection('calendars')
-                                        .doc(widget.calendarId)
-                                        .collection('dates')
-                                        .doc(dateId)
-                                        .collection('places')
-                                        .doc(placeDoc.id)
-                                        .delete();
-
-                                    _loadDayItinerary(dateId);
-                                  }
-                                },
-                              )
-                                  : null,
-                            );
-                          },
-                        );
-                      },
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0, vertical: 8.0),
+                      backgroundColor: _selectedDay == dateId
+                          ? Colors.blue
+                          : Colors.grey[300],
+                      minimumSize: const Size(50, 40), // 버튼 크기 조절
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AddPlaceScreen(
-                              calendarId: widget.calendarId,
-                              dayId: dateId,
+                    onPressed: () {
+                      setState(() {
+                        _selectedDay = dateId;
+                      });
+                      _loadDayItinerary(dateId);
+                    },
+                    child: Text(
+                      "Day ${index + 1}",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: _selectedDay == dateId
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // 일정 리스트 및 추가 버튼
+          Expanded(
+            flex: 1,
+            child: FutureBuilder<QuerySnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser?.uid)
+                  .collection('calendars')
+                  .doc(widget.calendarId)
+                  .collection('dates')
+                  .doc(_selectedDay)
+                  .collection('places')
+                  .orderBy('order')
+                  .get(),
+              builder: (context, placesSnapshot) {
+                if (!placesSnapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final places = placesSnapshot.data!.docs;
+
+                return Column(
+                  children: [
+                    Expanded(
+                      child: ReorderableListView.builder(
+                        shrinkWrap: true,
+                        itemCount: places.length,
+                        onReorder: (oldIndex, newIndex) async {
+                          if (newIndex > oldIndex) {
+                            newIndex -= 1;
+                          }
+                          final item = places.removeAt(oldIndex);
+                          places.insert(newIndex, item);
+                          await _updatePlaceOrder(_selectedDay!);
+                          setState(() {
+                            _loadDayItinerary(_selectedDay!);
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          final placeDoc = places[index];
+                          final place = placeDoc.data() as Map<String, dynamic>;
+                          final geoPoint = place['location'] as GeoPoint;
+                          final order = place['order'] as int;
+
+                          return ListTile(
+                            key: ValueKey(placeDoc.id),
+                            leading: _isEditing
+                                ? const Icon(Icons.menu)
+                                : CircleAvatar(
+                                    backgroundColor: Colors.grey[200],
+                                    child: Text((index + 1).toString()),
+                                  ),
+                            title: Text(place['name']),
+                            onTap: () {
+                              _moveCameraToPlace(LatLng(
+                                  geoPoint.latitude, geoPoint.longitude));
+                            },
+                            trailing: _isEditing
+                                ? IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () async {
+                                      bool confirm = await showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text("일정 삭제"),
+                                          content: const Text("정말로 삭제하시겠습니까?"),
+                                          actions: [
+                                            TextButton(
+                                              child: const Text("취소"),
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(false),
+                                            ),
+                                            TextButton(
+                                              child: const Text("삭제"),
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(true),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+
+                                      if (confirm) {
+                                        await FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(FirebaseAuth
+                                                .instance.currentUser?.uid)
+                                            .collection('calendars')
+                                            .doc(widget.calendarId)
+                                            .collection('dates')
+                                            .doc(_selectedDay)
+                                            .collection('places')
+                                            .doc(placeDoc.id)
+                                            .delete();
+
+                                        await _updatePlaceOrder(_selectedDay!);
+                                        setState(() {
+                                          _loadDayItinerary(_selectedDay!);
+                                        });
+                                      }
+                                    },
+                                  )
+                                : null,
+                          );
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.add),
+                        label: const Text("일정 추가"),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AddPlaceScreen(
+                                calendarId: widget.calendarId,
+                                dayId: _selectedDay!,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      child: Text('일정 추가'),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 );
