@@ -17,15 +17,32 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: '여행 캘린더 앱',
       theme: ThemeData(
-        primarySwatch: Colors.deepOrange,
-        fontFamily: 'Pretendard-Medium',
-        secondaryHeaderColor: Colors.amber,
-        canvasColor: const Color.fromARGB(255, 255, 255, 255),
-        focusColor: const Color.fromARGB(255, 255, 254, 234),
-        highlightColor: const Color.fromARGB(255, 243, 167, 172),
-        primaryColor: const Color.fromARGB(255, 64, 188, 203),
-        primaryColorLight: const Color.fromARGB(255, 0, 153, 217),
-        primaryColorDark: const Color.fromARGB(255, 0, 0, 0),
+        colorScheme: const ColorScheme(
+          primary: Color(0xFF40BCCB), // PANTONE 311C
+          primaryContainer: Color(0xFFF3A7AC), // PANTONE 494C
+          secondary: Color(0xFF0099CC), // PANTONE 2192C
+          secondaryContainer: Color(0xFF0099CC), // PANTONE 311C
+          surface: Color(0xFFFFFFFF), // PANTONE White C
+          error: Colors.red, // 기본 오류 색상
+          onPrimary: Colors.white,
+          onSecondary: Colors.white,
+          onSurface: Colors.black,
+          onError: Colors.white,
+          brightness: Brightness.light, // 밝은 테마
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF40BCCB), // AppBar와 프로필 배경을 같은 색상으로
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+          centerTitle: true,
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFF0099CC), // FAB 버튼 색상
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: Color(0xFF0099CC),
+          unselectedItemColor: Colors.grey,
+        ),
       ),
       home: const SignIn(),
     );
