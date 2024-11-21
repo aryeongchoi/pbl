@@ -28,8 +28,8 @@ class _HomePageState extends State<HomePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
-                radius: 5,
-                backgroundColor: Colors.teal,
+                radius: 8,
+                backgroundColor: Theme.of(context).colorScheme.primary,
               ),
               SizedBox(width: 8),
               Text(

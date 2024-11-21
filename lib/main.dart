@@ -13,8 +13,32 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: '여행 캘린더 앱',
       theme: ThemeData(
-        primarySwatch: Colors.teal,
-        fontFamily: 'Pretendard-Medium',
+        colorScheme: const ColorScheme(
+          primary: Color(0xFF40BCCB), // PANTONE 311C
+          primaryContainer: Color(0xFFF3A7AC), // PANTONE 494C
+          secondary: Color(0xFF0099CC), // PANTONE 2192C
+          secondaryContainer: Color(0xFF0099CC), // PANTONE 311C
+          surface: Color(0xFFFFFFFF), // PANTONE White C
+          error: Colors.red, // 기본 오류 색상
+          onPrimary: Colors.white,
+          onSecondary: Color(0xFFEAEAEA),
+          onSurface: Colors.black,
+          onError: Colors.white,
+          brightness: Brightness.light, // 밝은 테마
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFFEAEAEA), // AppBar와 프로필 배경을 같은 색상으로
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+          centerTitle: true,
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFF0099CC), // FAB 버튼 색상
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: Color(0xFF0099CC),
+          unselectedItemColor: Colors.grey,
+        ),
       ),
       home: MainPage(),
     );
@@ -63,7 +87,7 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(icon: Icon(Icons.info), label: '정보'),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Color(0xFF3EBBCB),
+        selectedItemColor: Theme.of(context).colorScheme.secondary,
         onTap: _onItemTapped,
       ),
     );
@@ -97,15 +121,15 @@ class _TravelCalendarPageState extends State<TravelCalendarPage> {
           margin: EdgeInsets.only(top: 15),
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(45),
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(30),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
                 radius: 8, // 동그라미 크기 설정
-                backgroundColor: Colors.teal, // 동그라미 색상 설정
+                backgroundColor: Theme.of(context).colorScheme.primary, // 동그라미 색상 설정
               ),
               SizedBox(width: 8),
               Text(
@@ -124,9 +148,9 @@ class _TravelCalendarPageState extends State<TravelCalendarPage> {
             margin: EdgeInsets.only(top: 80), // 상단 여백을 조정하여 잘리지 않게 함
             height: 1200,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: Color(0xFFEAEAEA), width: 1), // 테두리 추가
+              border: Border.all(color: Theme.of(context).colorScheme.primary, width: 1), // 테두리 추가
             ),
             child: Center(
               child: Column(
@@ -204,7 +228,7 @@ class _TravelCalendarPageState extends State<TravelCalendarPage> {
     return TableCalendar(
       focusedDay: _focusedDay,
       firstDay: DateTime.utc(2023, 1, 1),
-      lastDay: DateTime.utc(2025, 12, 31),
+      lastDay: DateTime.utc(2025, 12, 31) ,
       selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
       onDaySelected: (selectedDay, focusedDay) {
         setState(() {
@@ -215,16 +239,18 @@ class _TravelCalendarPageState extends State<TravelCalendarPage> {
       },
       calendarStyle: CalendarStyle(
         todayDecoration: BoxDecoration(
-          color: Color(0xFF3EBBCB),
+          color: Theme.of(context).colorScheme.primary,
           shape: BoxShape.circle,
         ),
         selectedDecoration: BoxDecoration(
-          color: Color(0xFFF3A8AC),
+          color: Theme.of(context).colorScheme.primaryContainer,
           shape: BoxShape.circle,
         ),
+        selectedTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+        todayTextStyle: TextStyle(color: Colors.white, fontSize: 20),
         outsideDaysVisible: false,
-        defaultTextStyle: TextStyle(fontSize: 20),
-        weekendTextStyle: TextStyle(fontSize: 20, color: Colors.red),
+        defaultTextStyle: TextStyle(fontSize: 23),
+        weekendTextStyle: TextStyle(fontSize: 23, color: Colors.red),
       ),
       calendarBuilders: CalendarBuilders(
         markerBuilder: (context, day, events) {
