@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:truple_practice/pages/trip_list.dart';
-import 'package:truple_practice/pages/signup.dart';
+import 'package:truple_practice/pages/main/home_page.dart';
+import 'package:truple_practice/pages/user_auth/signup.dart';
 import 'package:truple_practice/services/auth.dart';
 import 'package:flutter/material.dart';
 
@@ -26,8 +26,9 @@ class _SignInState extends State<SignIn> {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
       // 로그인 성공 시 홈 페이지로 이동
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const TripList()));
+
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const TravelCalendarPage()));
     } on FirebaseAuthException catch (e) {
       // Firebase 인증 오류를 처리
       if (e.code == 'user-not-found') {

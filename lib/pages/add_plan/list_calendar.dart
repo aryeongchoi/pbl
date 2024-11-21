@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ListCalendar extends StatefulWidget {
-  const ListCalendar({Key? key}) : super(key: key);
+  const ListCalendar({super.key});
 
   @override
   _ListCalendarState createState() => _ListCalendarState();
@@ -52,37 +52,39 @@ class _ListCalendarState extends State<ListCalendar> {
                 title: Text(calendar['name'] ?? 'Unnamed Calendar'),
                 subtitle: Text(
                   'Start: ${calendar['start_date']}\nEnd: ${calendar['end_date']}',
-                  style: TextStyle(color: Colors.grey),
+                  style: const TextStyle(color: Colors.grey),
                 ),
                 trailing: _isEditing
                     ? IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.black),
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('삭제 확인'),
-                          content: const Text('정말로 이 일정을 삭제하시겠습니까?'),
-                          actions: <Widget>[
-                            TextButton(
-                              child: const Text('취소'),
-                              onPressed: () => Navigator.of(context).pop(false),
-                            ),
-                            TextButton(
-                              child: const Text('삭제'),
-                              onPressed: () => Navigator.of(context).pop(true),
-                            ),
-                          ],
-                        );
-                      },
-                    );
+                        icon: const Icon(Icons.delete, color: Colors.black),
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text('삭제 확인'),
+                                content: const Text('정말로 이 일정을 삭제하시겠습니까?'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('취소'),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                  ),
+                                  TextButton(
+                                    child: const Text('삭제'),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
 
-                    if (confirm == true) {
-                      await _deleteCalendar(userId, calendar.id);
-                    }
-                  },
-                )
+                          if (confirm == true) {
+                            await _deleteCalendar(userId, calendar.id);
+                          }
+                        },
+                      )
                     : null,
                 onTap: () {
                   Navigator.push(
@@ -118,7 +120,8 @@ class _ListCalendarState extends State<ListCalendar> {
             .get();
 
         for (var dateDoc in datesSnapshot.docs) {
-          final placesSnapshot = await dateDoc.reference.collection('places').get();
+          final placesSnapshot =
+              await dateDoc.reference.collection('places').get();
           for (var placeDoc in placesSnapshot.docs) {
             await placeDoc.reference.delete();
           }
@@ -166,7 +169,9 @@ class _ListCalendarState extends State<ListCalendar> {
                     lastDate: DateTime(2100),
                   );
                 },
-                child: Text(startDate == null ? '시작 날짜 선택' : '시작 날짜: ${startDate.toString().split(' ')[0]}'),
+                child: Text(startDate == null
+                    ? '시작 날짜 선택'
+                    : '시작 날짜: ${startDate.toString().split(' ')[0]}'),
               ),
               const SizedBox(height: 8.0),
               ElevatedButton(
@@ -178,7 +183,9 @@ class _ListCalendarState extends State<ListCalendar> {
                     lastDate: DateTime(2100),
                   );
                 },
-                child: Text(endDate == null ? '종료 날짜 선택' : '종료 날짜: ${endDate.toString().split(' ')[0]}'),
+                child: Text(endDate == null
+                    ? '종료 날짜 선택'
+                    : '종료 날짜: ${endDate.toString().split(' ')[0]}'),
               ),
             ],
           ),
@@ -192,7 +199,10 @@ class _ListCalendarState extends State<ListCalendar> {
             TextButton(
               child: const Text('추가'),
               onPressed: () async {
-                if (userId != null && nameController.text.isNotEmpty && startDate != null && endDate != null) {
+                if (userId != null &&
+                    nameController.text.isNotEmpty &&
+                    startDate != null &&
+                    endDate != null) {
                   await FirebaseFirestore.instance
                       .collection('users')
                       .doc(userId)
@@ -212,4 +222,3 @@ class _ListCalendarState extends State<ListCalendar> {
     );
   }
 }
-

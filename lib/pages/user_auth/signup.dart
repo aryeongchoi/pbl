@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:truple_practice/pages/trip_list.dart';
-import 'package:truple_practice/pages/signin.dart';
+import 'package:truple_practice/pages/main/home_page.dart';
+import 'package:truple_practice/pages/user_auth/signin.dart';
 import 'package:flutter/material.dart';
 
 class SignUp extends StatefulWidget {
@@ -37,7 +37,7 @@ class _SignUpState extends State<SignUp> {
             )));
         // 홈 페이지로 이동
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const TripList()));
+            context, MaterialPageRoute(builder: (context) => const HomePage()));
       } on FirebaseAuthException catch (e) {
         // Firebase 인증 오류를 처리
         if (e.code == 'weak-password') {

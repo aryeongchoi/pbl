@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-class HomePage extends StatefulWidget {
+class MainPage extends StatefulWidget {
   final VoidCallback onNavigateToMyTravel;
 
-  const HomePage({super.key, required this.onNavigateToMyTravel});
+  const MainPage({super.key, required this.onNavigateToMyTravel});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _MainPageState createState() => _MainPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _MainPageState extends State<MainPage> {
   final PageController _pageController = PageController();
 
   @override
@@ -148,7 +148,8 @@ class TravelCard extends StatelessWidget {
   final String tag;
   final Color tagColor;
 
-  const TravelCard({super.key, 
+  const TravelCard({
+    super.key,
     required this.imagePath,
     required this.isHot,
     required this.tag,
