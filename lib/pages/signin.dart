@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:truple_practice/pages/home.dart';
+import 'package:truple_practice/pages/trip_list.dart';
 import 'package:truple_practice/pages/signup.dart';
 import 'package:truple_practice/services/auth.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +26,8 @@ class _SignInState extends State<SignIn> {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
       // 로그인 성공 시 홈 페이지로 이동
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const Home()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => const TripList()));
     } on FirebaseAuthException catch (e) {
       // Firebase 인증 오류를 처리
       if (e.code == 'user-not-found') {
@@ -62,10 +63,10 @@ class _SignInState extends State<SignIn> {
                 width: MediaQuery.of(context).size.width,
                 decoration: const BoxDecoration(
                     gradient: LinearGradient(colors: [
-                      Color(0xFF9dc3d5),
-                      Color(0xFF9ac3d4),
-                      Color.fromARGB(145, 27, 94, 118)
-                    ], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+                  Color(0xFF9dc3d5),
+                  Color(0xFF9ac3d4),
+                  Color.fromARGB(145, 27, 94, 118)
+                ], begin: Alignment.topLeft, end: Alignment.bottomRight)),
                 child: Padding(
                   padding: const EdgeInsets.only(left: 30.0, right: 30.0),
                   child: Column(
@@ -85,8 +86,7 @@ class _SignInState extends State<SignIn> {
                           enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(
                                 color: Colors.white,
-                                width:
-                                1.5), // 기본적으로 포커스되지 않았을 때의 색상
+                                width: 1.5), // 기본적으로 포커스되지 않았을 때의 색상
                           ),
                         ),
                         style: const TextStyle(
@@ -107,8 +107,7 @@ class _SignInState extends State<SignIn> {
                           enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(
                                 color: Colors.white,
-                                width:
-                                1.5), // 기본적으로 포커스되지 않았을 때의 색상
+                                width: 1.5), // 기본적으로 포커스되지 않았을 때의 색상
                           ),
                         ),
                         style: const TextStyle(
@@ -131,12 +130,13 @@ class _SignInState extends State<SignIn> {
                                   fontWeight: FontWeight.bold),
                             ),
                             GestureDetector(
-                              onTap: (){
+                              onTap: () {
                                 // 이메일과 비밀번호 입력이 비어있지 않을 경우 로그인 함수 호출
-                                if(mailcontroller.text!="" && passwordcontroller.text!=""){
+                                if (mailcontroller.text != "" &&
+                                    passwordcontroller.text != "") {
                                   setState(() {
-                                    email= mailcontroller.text;
-                                    password= passwordcontroller.text;
+                                    email = mailcontroller.text;
+                                    password = passwordcontroller.text;
                                   });
                                 }
                                 userlogin();
@@ -167,7 +167,7 @@ class _SignInState extends State<SignIn> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           GestureDetector(
-                            onTap: (){
+                            onTap: () {
                               // 구글 로그인 기능 호출
                               AuthMethods().signInWithGoogle(context);
                             },
@@ -188,7 +188,7 @@ class _SignInState extends State<SignIn> {
                             width: 30.0,
                           ),
                           GestureDetector(
-                            onTap: (){
+                            onTap: () {
                               // 애플 로그인 기능 호출 (현재 구현 없음)
                             },
                             child: Container(

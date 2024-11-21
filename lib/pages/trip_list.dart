@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'list_calendar.dart';
 
-class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+class TripList extends StatefulWidget {
+  const TripList({super.key});
 
   @override
-  State<Home> createState() => _HomeState();
+  State<TripList> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<TripList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Home"),
+        title: const Text("TripList"),
       ),
       body: Center(
         child: ElevatedButton(

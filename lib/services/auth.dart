@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:truple_practice/pages/home.dart';
+import 'package:truple_practice/pages/trip_list.dart';
 import 'package:truple_practice/services/database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -12,16 +12,15 @@ class AuthMethods {
     return auth.currentUser;
   }
 
-
   signInWithGoogle(BuildContext context) async {
     final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     final GoogleSignIn googleSignIn = GoogleSignIn();
 
-    final GoogleSignInAccount? googleSignInAccount = await googleSignIn
-        .signIn();
+    final GoogleSignInAccount? googleSignInAccount =
+        await googleSignIn.signIn();
 
-    final GoogleSignInAuthentication? googleSignInAuthentication = await googleSignInAccount
-        ?.authentication;
+    final GoogleSignInAuthentication? googleSignInAuthentication =
+        await googleSignInAccount?.authentication;
 
     final AuthCredential credential = GoogleAuthProvider.credential(
       idToken: googleSignInAuthentication?.idToken,
@@ -38,11 +37,9 @@ class AuthMethods {
       "imgUrl": userdetails.photoURL,
       "id": userdetails.uid,
     };
-    await DatabaseMethods().addUser(userdetails.uid, userInfoMap).then((
-        value) {
+    await DatabaseMethods().addUser(userdetails.uid, userInfoMap).then((value) {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const Home()));
+          context, MaterialPageRoute(builder: (context) => const TripList()));
     });
-    }
-
+  }
 }
