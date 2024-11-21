@@ -127,9 +127,10 @@ class _InfoPageState extends State<InfoPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildLegendItem(Theme.of(context).highlightColor, "이전 일정"),
+          _buildLegendItem(
+              Theme.of(context).colorScheme.primaryContainer, "이전 일정"),
           const SizedBox(width: 16),
-          _buildLegendItem(Theme.of(context).primaryColor, "추진 일정"),
+          _buildLegendItem(Theme.of(context).colorScheme.primary, "추진 일정"),
         ],
       ),
     );
