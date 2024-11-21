@@ -165,13 +165,44 @@ class _CalendarState extends State<Calendar> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("여행 일정"),
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(45),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.shadow,
+                offset: const Offset(0, 0),
+                blurRadius: 10,
+                spreadRadius: 1,
+                blurStyle: BlurStyle.normal,
+              ),
+            ],
+          ),
+          child: const Text(
+            '여행일정',
+            style: TextStyle(fontSize: 18, color: Colors.black),
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context); // 뒤로가기 버튼 동작
+          },
+        ),
         actions: [
           IconButton(
-            icon: Icon(_isEditing ? Icons.done : Icons.edit),
+            icon: Icon(
+              _isEditing ? Icons.done : Icons.edit,
+              color: Colors.black,
+            ),
             onPressed: () {
               setState(() {
-                _isEditing = !_isEditing;
+                _isEditing = !_isEditing; // 편집 모드 토글
               });
             },
           ),
@@ -182,43 +213,54 @@ class _CalendarState extends State<Calendar> {
           // Google Map
           Expanded(
             flex: 1,
-            child: GoogleMap(
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: true,
-              initialCameraPosition: _initCameraPosition,
-              onMapCreated: (controller) {
-                _googleMapController = controller;
-              },
-              markers: _markers,
-              polylines: {
-                Polyline(
-                  polylineId: const PolylineId('route'),
-                  color: Colors.blue,
-                  width: 3,
-                  patterns: const [PatternItem.dot],
-                  points: _polylineCoordinates,
-                ),
-              },
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromARGB(20, 0, 0, 0),
+                      offset: Offset(0, -10),
+                      spreadRadius: 1,
+                      blurRadius: 20,
+                    ),
+                  ]),
+              clipBehavior: Clip.antiAlias,
+              child: GoogleMap(
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: true,
+                initialCameraPosition: _initCameraPosition,
+                onMapCreated: (controller) {
+                  _googleMapController = controller;
+                },
+                markers: _markers,
+                polylines: {
+                  Polyline(
+                    polylineId: const PolylineId('route'),
+                    color: Colors.blue,
+                    width: 3,
+                    patterns: const [PatternItem.dot],
+                    points: _polylineCoordinates,
+                  ),
+                },
+              ),
             ),
           ),
           // 날짜 버튼을 수평으로 배치하여 Google Map 아래에 표시
           SizedBox(
-            height: 60,
+            height: 50,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: _dateList.length,
               itemBuilder: (context, index) {
                 final dateId = _dateList[index];
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0, vertical: 8.0),
                       backgroundColor: _selectedDay == dateId
-                          ? Colors.blue
-                          : Colors.grey[300],
-                      minimumSize: const Size(50, 40), // 버튼 크기 조절
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey[300], // 버튼 크기 조절
                     ),
                     onPressed: () {
                       setState(() {
@@ -372,13 +414,6 @@ class _CalendarState extends State<Calendar> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // 전체 일정에 대한 추가 논리
-        },
-        tooltip: "일정 추가",
-        child: const Icon(Icons.add),
       ),
     );
   }

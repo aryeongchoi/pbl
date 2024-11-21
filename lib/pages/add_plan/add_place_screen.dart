@@ -11,7 +11,8 @@ class AddPlaceScreen extends StatefulWidget {
   final String calendarId;
   final String dayId; // 추가된 dayId
 
-  const AddPlaceScreen({Key? key, required this.calendarId, required this.dayId}) : super(key: key);
+  const AddPlaceScreen(
+      {super.key, required this.calendarId, required this.dayId});
 
   @override
   _AddPlaceScreenState createState() => _AddPlaceScreenState();
@@ -20,13 +21,16 @@ class AddPlaceScreen extends StatefulWidget {
 class _AddPlaceScreenState extends State<AddPlaceScreen> {
   final List<Prediction> _selectedPlaces = [];
   final TextEditingController _searchController = TextEditingController();
-  final String apiKey = "AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4"; // Google API Key
+  final String apiKey =
+      "AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4"; // Google API Key
 
-  Future<void> _addPlaceToFirestore(Prediction prediction, double latitude, double longitude) async {
+  Future<void> _addPlaceToFirestore(
+      Prediction prediction, double latitude, double longitude) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
       try {
-        final shortDescription = prediction.structuredFormatting?.mainText ?? 'Unknown Location';
+        final shortDescription =
+            prediction.structuredFormatting?.mainText ?? 'Unknown Location';
         final placeId = prediction.placeId ?? 'Unknown Place ID';
 
         // Google Places API를 사용하여 장소 세부 정보를 가져옵니다.
@@ -56,7 +60,8 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
         print('Place added with coordinates: ($latitude, $longitude)');
       } catch (e) {
         print('Failed to add place to Firestore: $e');
-        print('Prediction details: ${prediction.description}, lat: $latitude, lng: $longitude');
+        print(
+            'Prediction details: ${prediction.description}, lat: $latitude, lng: $longitude');
       }
     } else {
       print('User is not logged in.');
@@ -86,7 +91,8 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
   }
 
   Future<Map<String, dynamic>> _fetchPlaceDetails(String placeId) async {
-    final url = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey');
+    final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -94,7 +100,10 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
       if (data['status'] == 'OK') {
         final result = data['result'];
         // 명시적 타입 변환
-        final types = (result['types'] as List<dynamic>?)?.map((item) => item as String).toList() ?? [];
+        final types = (result['types'] as List<dynamic>?)
+                ?.map((item) => item as String)
+                .toList() ??
+            [];
         final rating = result['rating'] as double? ?? 0.0;
         return {
           'types': types,
@@ -106,7 +115,8 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
   }
 
   Future<String?> fetchPhotoReference(String placeId) async {
-    final url = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey');
+    final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -129,7 +139,35 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("장소 추가"),
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(45),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.shadow,
+                offset: const Offset(0, 0),
+                blurRadius: 10,
+                spreadRadius: 1,
+                blurStyle: BlurStyle.normal,
+              ),
+            ],
+          ),
+          child: const Text(
+            '여행일정 목록',
+            style: TextStyle(fontSize: 18, color: Colors.black),
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context); // 뒤로가기 버튼 동작
+          },
+        ),
       ),
       body: Column(
         children: [
@@ -143,53 +181,51 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
             debounceTime: 800,
             isLatLngRequired: true,
             getPlaceDetailWithLatLng: (Prediction prediction) {
-              if (prediction != null) {
-                final latitude = double.tryParse(prediction.lat ?? '') ?? 0.0;
-                final longitude = double.tryParse(prediction.lng ?? '') ?? 0.0;
+              final latitude = double.tryParse(prediction.lat ?? '') ?? 0.0;
+              final longitude = double.tryParse(prediction.lng ?? '') ?? 0.0;
 
-                if (latitude == 0.0 && longitude == 0.0) {
-                  print('Warning: Coordinates are (0.0, 0.0). This may indicate missing or invalid data.');
-                }
-
-                print('Coordinates: ($latitude, $longitude)');
-
-                setState(() {
-                  _selectedPlaces.add(prediction);
-                  _searchController.clear(); // 검색창 초기화
-                });
-              } else {
-                print('Prediction was null');
+              if (latitude == 0.0 && longitude == 0.0) {
+                print(
+                    'Warning: Coordinates are (0.0, 0.0). This may indicate missing or invalid data.');
               }
+
+              print('Coordinates: ($latitude, $longitude)');
+
+              setState(() {
+                _selectedPlaces.add(prediction);
+                _searchController.clear(); // 검색창 초기화
+              });
             },
             itemClick: (Prediction prediction) {
               _searchController.text = prediction.description ?? '';
             },
           ),
           const SizedBox(height: 10),
-          Spacer(),
+          const Spacer(),
           SizedBox(
             height: screenHeight / 3,
             child: FutureBuilder<List<Widget>>(
               future: _buildSearchResults(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                   return ListView.separated(
                     itemCount: snapshot.data!.length,
-                    separatorBuilder: (context, index) => SizedBox(height: 10),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       return snapshot.data![index];
                     },
                   );
                 } else {
-                  return Center(child: Text('No search results'));
+                  return const Center(child: Text('No search results'));
                 }
               },
             ),
           ),
           Container(
-            padding: EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             color: Colors.white,
             child: ElevatedButton(
               onPressed: () async {
@@ -201,13 +237,15 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
                     if (latitude != 0.0 && longitude != 0.0) {
                       await _addPlaceToFirestore(place, latitude, longitude);
                     } else {
-                      print('Invalid coordinates for place: ${place.description}');
+                      print(
+                          'Invalid coordinates for place: ${place.description}');
                     }
                   }
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Calendar(calendarId: widget.calendarId),
+                      builder: (context) =>
+                          Calendar(calendarId: widget.calendarId),
                     ),
                   );
                 } else {

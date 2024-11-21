@@ -19,13 +19,44 @@ class _ListCalendarState extends State<ListCalendar> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("여행 일정 목록"),
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(45),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.shadow,
+                offset: const Offset(0, 0),
+                blurRadius: 10,
+                spreadRadius: 1,
+                blurStyle: BlurStyle.normal,
+              ),
+            ],
+          ),
+          child: const Text(
+            '여행일정 목록',
+            style: TextStyle(fontSize: 18, color: Colors.black),
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context); // 뒤로가기 버튼 동작
+          },
+        ),
         actions: [
           IconButton(
-            icon: Icon(_isEditing ? Icons.done : Icons.edit),
+            icon: Icon(
+              _isEditing ? Icons.done : Icons.edit,
+              color: Colors.black,
+            ),
             onPressed: () {
               setState(() {
-                _isEditing = !_isEditing;
+                _isEditing = !_isEditing; // 편집 모드 토글
               });
             },
           ),
@@ -99,11 +130,14 @@ class _ListCalendarState extends State<ListCalendar> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showAddCalendarDialog(context, userId);
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        child: FloatingActionButton(
+          onPressed: () {
+            _showAddCalendarDialog(context, userId);
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
