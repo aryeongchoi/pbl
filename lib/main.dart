@@ -30,11 +30,12 @@ class MyApp extends StatelessWidget {
           primaryContainer: Color(0xFFF3A7AC), // PANTONE 494C
           onPrimaryContainer: Color.fromRGBO(172, 123, 125, 1),
 
-          tertiary: Color(0xFFFFFEEA),
+          tertiary: Color.fromRGBO(255, 254, 234, 1),
           onTertiary: Color(0xFFABAA92),
 
           surface: Color(0xFFFFFFFF), // PANTONE White C
-          onSurface: Color(0xFFF5F5F5),
+
+          onSurface: Color.fromARGB(255, 31, 31, 31), //글자랑 아이콘 색
 
           error: Colors.red, // 기본 오류 색상
           onError: Colors.white,

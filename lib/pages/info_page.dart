@@ -179,7 +179,8 @@ class _InfoPageState extends State<InfoPage> {
           shape: BoxShape.circle,
         ),
         outsideDaysVisible: false,
-        defaultTextStyle: const TextStyle(fontSize: 20),
+        defaultTextStyle:
+            const TextStyle(fontSize: 20, color: Color.fromARGB(255, 0, 0, 0)),
         weekendTextStyle: const TextStyle(fontSize: 20, color: Colors.red),
       ),
       calendarBuilders: CalendarBuilders(
