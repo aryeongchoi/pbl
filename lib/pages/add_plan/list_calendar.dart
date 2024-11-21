@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class ListCalendar extends StatefulWidget {
   const ListCalendar({super.key});
@@ -16,6 +17,7 @@ class _ListCalendarState extends State<ListCalendar> {
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid;
+
 
     return Scaffold(
       appBar: AppBar(
@@ -44,14 +46,16 @@ class _ListCalendarState extends State<ListCalendar> {
 
           final calendars = snapshot.data!.docs;
 
-          return ListView.builder(
+          return ListView.builder( //일정 표시
             itemCount: calendars.length,
             itemBuilder: (context, index) {
               final calendar = calendars[index];
+              final start_date = (calendar['start_date'] as Timestamp).toDate(); //여행 기간 표시용
+              final end_date = (calendar['end_date'] as Timestamp).toDate(); //여행 기간 표시용
               return ListTile(
                 title: Text(calendar['name'] ?? 'Unnamed Calendar'),
                 subtitle: Text(
-                  'Start: ${calendar['start_date']}\nEnd: ${calendar['end_date']}',
+                  '${DateFormat('yyyy-MM-dd').format(start_date)} ~ ${DateFormat('yyyy-MM-dd').format(end_date)}', // 여행 기간 표시
                   style: const TextStyle(color: Colors.grey),
                 ),
                 trailing: _isEditing
@@ -86,11 +90,31 @@ class _ListCalendarState extends State<ListCalendar> {
                         },
                       )
                     : null,
-                onTap: () {
+                onTap: () async {
+                  String dayId = 'defaultDayId'; // 기본값 설정
+
+                  // Firestore에서 날짜 목록을 가져오기
+                  final datesSnapshot = await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(userId)
+                      .collection('calendars')
+                      .doc(calendar.id)
+                      .collection('dates')
+                      .orderBy('date') // 날짜를 기준으로 정렬
+                      .get();
+
+                  if (datesSnapshot.docs.isNotEmpty) {
+                    // 가장 첫 번째 날짜의 문서 ID를 dayId로 사용
+                    dayId = datesSnapshot.docs.first.id;
+                  }
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Calendar(calendarId: calendar.id),
+                      builder: (context) => Calendar(
+                        calendarId: calendar.id,
+                        dayId: dayId, // Firestore에서 가져온 dayId 사용
+                      ),
                     ),
                   );
                 },

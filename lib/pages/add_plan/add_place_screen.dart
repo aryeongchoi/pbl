@@ -11,7 +11,7 @@ class AddPlaceScreen extends StatefulWidget {
   final String calendarId;
   final String dayId; // 추가된 dayId
 
-  const AddPlaceScreen({Key? key, required this.calendarId, required this.dayId}) : super(key: key);
+  const AddPlaceScreen({super.key, required this.calendarId, required this.dayId});
 
   @override
   _AddPlaceScreenState createState() => _AddPlaceScreenState();
@@ -42,7 +42,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
             .collection('calendars')
             .doc(widget.calendarId)
             .collection('dates')
-            .doc(widget.dayId) // 전달받은 dayId 사용
+            .doc(widget.dayId)
             .collection('places')
             .add({
           'name': shortDescription,
@@ -72,7 +72,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
           .collection('calendars')
           .doc(widget.calendarId)
           .collection('dates')
-          .doc(widget.dayId) // 전달받은 dayId 사용
+          .doc(widget.dayId)
           .collection('places')
           .orderBy('order', descending: true)
           .limit(1)
@@ -93,7 +93,6 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
       final data = json.decode(response.body);
       if (data['status'] == 'OK') {
         final result = data['result'];
-        // 명시적 타입 변환
         final types = (result['types'] as List<dynamic>?)?.map((item) => item as String).toList() ?? [];
         final rating = result['rating'] as double? ?? 0.0;
         return {
@@ -143,53 +142,49 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
             debounceTime: 800,
             isLatLngRequired: true,
             getPlaceDetailWithLatLng: (Prediction prediction) {
-              if (prediction != null) {
-                final latitude = double.tryParse(prediction.lat ?? '') ?? 0.0;
-                final longitude = double.tryParse(prediction.lng ?? '') ?? 0.0;
+              final latitude = double.tryParse(prediction.lat ?? '') ?? 0.0;
+              final longitude = double.tryParse(prediction.lng ?? '') ?? 0.0;
 
-                if (latitude == 0.0 && longitude == 0.0) {
-                  print('Warning: Coordinates are (0.0, 0.0). This may indicate missing or invalid data.');
-                }
-
-                print('Coordinates: ($latitude, $longitude)');
-
-                setState(() {
-                  _selectedPlaces.add(prediction);
-                  _searchController.clear(); // 검색창 초기화
-                });
-              } else {
-                print('Prediction was null');
+              if (latitude == 0.0 && longitude == 0.0) {
+                print('Warning: Coordinates are (0.0, 0.0). This may indicate missing or invalid data.');
               }
-            },
+
+              print('Coordinates: ($latitude, $longitude)');
+
+              setState(() {
+                _selectedPlaces.add(prediction);
+                _searchController.clear(); // 검색창 초기화
+              });
+                        },
             itemClick: (Prediction prediction) {
               _searchController.text = prediction.description ?? '';
             },
           ),
           const SizedBox(height: 10),
-          Spacer(),
+          const Spacer(),
           SizedBox(
             height: screenHeight / 3,
             child: FutureBuilder<List<Widget>>(
               future: _buildSearchResults(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                   return ListView.separated(
                     itemCount: snapshot.data!.length,
-                    separatorBuilder: (context, index) => SizedBox(height: 10),
+                    separatorBuilder: (context, index) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       return snapshot.data![index];
                     },
                   );
                 } else {
-                  return Center(child: Text('No search results'));
+                  return const Center(child: Text('No search results'));
                 }
               },
             ),
           ),
           Container(
-            padding: EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             color: Colors.white,
             child: ElevatedButton(
               onPressed: () async {
@@ -207,7 +202,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Calendar(calendarId: widget.calendarId),
+                      builder: (context) => Calendar(calendarId: widget.calendarId, dayId: widget.dayId),
                     ),
                   );
                 } else {

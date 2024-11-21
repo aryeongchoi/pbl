@@ -7,8 +7,9 @@ import 'package:intl/intl.dart';
 
 class Calendar extends StatefulWidget {
   final String calendarId;
+  final String dayId; // dayId 추가
 
-  const Calendar({super.key, required this.calendarId});
+  const Calendar({super.key, required this.calendarId, required this.dayId});
 
   @override
   _CalendarState createState() => _CalendarState();
@@ -20,12 +21,18 @@ class _CalendarState extends State<Calendar> {
     zoom: 15.5,
   );
 
+
+
   GoogleMapController? _googleMapController;
   Set<Marker> _markers = {};
   List<LatLng> _polylineCoordinates = [];
-  bool _isEditing = false;
+  bool _isEditing = false; //장소 수정용
   List<String> _dateList = [];
   String? _selectedDay; // 현재 선택된 날짜
+  String? _calendarName;
+  DateTime? _startDate;
+  DateTime? _endDate;
+  bool _isEditingCalendarDetails = false; //여행 일정 이름, 기간 수정용
 
   @override
   void initState() {
@@ -51,11 +58,12 @@ class _CalendarState extends State<Calendar> {
 
       if (calendarDoc.exists) {
         final data = calendarDoc.data();
-        final startDate = (data?['start_date'] as Timestamp).toDate();
-        final endDate = (data?['end_date'] as Timestamp).toDate();
 
         setState(() {
-          _dateList = _generateDateList(startDate, endDate);
+          _calendarName = data?['name'];
+          _startDate = (data?['start_date'] as Timestamp).toDate();
+          _endDate = (data?['end_date'] as Timestamp).toDate();
+          _dateList = _generateDateList(_startDate!, _endDate!);
           _selectedDay = _dateList.isNotEmpty ? _dateList[0] : null; // 기본 선택 날짜
           if (_selectedDay != null) {
             _loadDayItinerary(_selectedDay!); // 기본 날짜의 일정을 불러옴
@@ -65,7 +73,7 @@ class _CalendarState extends State<Calendar> {
     }
   }
 
-  List<String> _generateDateList(DateTime startDate, DateTime endDate) {
+  List<String> _generateDateList(DateTime startDate, DateTime endDate) { //여행 기간 계산
     List<String> dateList = [];
     DateTime currentDate = startDate;
 
@@ -78,7 +86,7 @@ class _CalendarState extends State<Calendar> {
     return dateList;
   }
 
-  void _loadDayItinerary(String dayId) async {
+  void _loadDayItinerary(String dayId) async { //일정 불러오기
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
       final placesSnapshot = await FirebaseFirestore.instance
@@ -105,7 +113,7 @@ class _CalendarState extends State<Calendar> {
           position: latLng,
           infoWindow: InfoWindow(title: data['name']),
           icon:
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+          BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
         ));
 
         polylineCoordinates.add(latLng);
@@ -123,7 +131,7 @@ class _CalendarState extends State<Calendar> {
     }
   }
 
-  void _moveCameraToPlace(LatLng target) {
+  void _moveCameraToPlace(LatLng target) { //각 날짜의 첫번째 장소로 카메라 이동
     _googleMapController?.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(target: target, zoom: 14.0),
@@ -131,7 +139,7 @@ class _CalendarState extends State<Calendar> {
     );
   }
 
-  Future<void> _updatePlaceOrder(String dayId) async {
+  Future<void> _updatePlaceOrder(String dayId) async { // 장소 순서 변경시 order 최신화
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
       final places = await FirebaseFirestore.instance
@@ -156,16 +164,61 @@ class _CalendarState extends State<Calendar> {
             .doc(dayId)
             .collection('places')
             .doc(placeDoc.id)
-            .update({'order': i}); // 순서를 0부터 재설정
+            .update({'order': i}); // 순서를 1부터 재설정
       }
     }
   }
+
+  Future<void> _updateCalendarDetails() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null && _calendarName != null && _startDate != null && _endDate != null) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('calendars')
+          .doc(widget.calendarId)
+          .update({
+        'name': _calendarName,
+        'start_date': _startDate,
+        'end_date': _endDate,
+      });
+
+      // 기존 날짜 문서를 업데이트 (places 컬렉션은 유지)
+      final datesCollection = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('calendars')
+          .doc(widget.calendarId)
+          .collection('dates');
+
+      final datesSnapshot = await datesCollection.get();
+      for (var doc in datesSnapshot.docs) {
+        final dateFieldExists = doc.data().containsKey('date'); // 예시로 'date' 필드가 있는지 확인
+        await datesCollection.doc(doc.id).set({
+          'date': dateFieldExists ? doc['date'] : null, // 실제 필드 이름에 맞게 수정
+        }, SetOptions(merge: true));
+      }
+
+      // 새로운 날짜 문서를 추가하거나 필요에 따라 업데이트
+      DateTime currentDate = _startDate!;
+      int dayCounter = 1;
+      while (!currentDate.isAfter(_endDate!)) {
+        final dayId = 'day${dayCounter.toString().padLeft(2, '0')}';
+        await datesCollection.doc(dayId).set({
+          'date': currentDate,
+        }, SetOptions(merge: true)); // 병합하여 places 컬렉션 유지
+        currentDate = currentDate.add(Duration(days: 1));
+        dayCounter++;
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("여행 일정"),
+        title:Text(_calendarName ?? '여행 일정'),
         actions: [
           IconButton(
             icon: Icon(_isEditing ? Icons.done : Icons.edit),
@@ -179,6 +232,16 @@ class _CalendarState extends State<Calendar> {
       ),
       body: Column(
         children: [
+          GestureDetector( // 여행 이름, 기간 클릭시 수정
+            onTap: () {
+              setState(() {
+                _isEditingCalendarDetails = true;
+              });
+            },
+            child: _isEditingCalendarDetails
+                ? _buildEditableCalendarDetails()
+                : _buildCalendarDetails(),
+          ),
           // Google Map
           Expanded(
             flex: 1,
@@ -289,9 +352,9 @@ class _CalendarState extends State<Calendar> {
                             leading: _isEditing
                                 ? const Icon(Icons.menu)
                                 : CircleAvatar(
-                                    backgroundColor: Colors.grey[200],
-                                    child: Text((index + 1).toString()),
-                                  ),
+                              backgroundColor: Colors.grey[200],
+                              child: Text((index + 1).toString()),
+                            ),
                             title: Text(place['name']),
                             onTap: () {
                               _moveCameraToPlace(LatLng(
@@ -299,50 +362,50 @@ class _CalendarState extends State<Calendar> {
                             },
                             trailing: _isEditing
                                 ? IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () async {
-                                      bool confirm = await showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: const Text("일정 삭제"),
-                                          content: const Text("정말로 삭제하시겠습니까?"),
-                                          actions: [
-                                            TextButton(
-                                              child: const Text("취소"),
-                                              onPressed: () =>
-                                                  Navigator.of(context)
-                                                      .pop(false),
-                                            ),
-                                            TextButton(
-                                              child: const Text("삭제"),
-                                              onPressed: () =>
-                                                  Navigator.of(context)
-                                                      .pop(true),
-                                            ),
-                                          ],
-                                        ),
-                                      );
+                              icon: const Icon(Icons.delete),
+                              onPressed: () async {
+                                bool confirm = await showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text("일정 삭제"),
+                                    content: const Text("정말로 삭제하시겠습니까?"),
+                                    actions: [
+                                      TextButton(
+                                        child: const Text("취소"),
+                                        onPressed: () =>
+                                            Navigator.of(context)
+                                                .pop(false),
+                                      ),
+                                      TextButton(
+                                        child: const Text("삭제"),
+                                        onPressed: () =>
+                                            Navigator.of(context)
+                                                .pop(true),
+                                      ),
+                                    ],
+                                  ),
+                                );
 
-                                      if (confirm) {
-                                        await FirebaseFirestore.instance
-                                            .collection('users')
-                                            .doc(FirebaseAuth
-                                                .instance.currentUser?.uid)
-                                            .collection('calendars')
-                                            .doc(widget.calendarId)
-                                            .collection('dates')
-                                            .doc(_selectedDay)
-                                            .collection('places')
-                                            .doc(placeDoc.id)
-                                            .delete();
+                                if (confirm) {
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(FirebaseAuth
+                                      .instance.currentUser?.uid)
+                                      .collection('calendars')
+                                      .doc(widget.calendarId)
+                                      .collection('dates')
+                                      .doc(_selectedDay)
+                                      .collection('places')
+                                      .doc(placeDoc.id)
+                                      .delete();
 
-                                        await _updatePlaceOrder(_selectedDay!);
-                                        setState(() {
-                                          _loadDayItinerary(_selectedDay!);
-                                        });
-                                      }
-                                    },
-                                  )
+                                  await _updatePlaceOrder(_selectedDay!);
+                                  setState(() {
+                                    _loadDayItinerary(_selectedDay!);
+                                  });
+                                }
+                              },
+                            )
                                 : null,
                           );
                         },
@@ -379,6 +442,87 @@ class _CalendarState extends State<Calendar> {
         },
         tooltip: "일정 추가",
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildCalendarDetails() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          Text(
+            _calendarName ?? '여행 일정',
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text('${_startDate != null ? DateFormat('yyyy-MM-dd').format(_startDate!) : ''} ~ ${_endDate != null ? DateFormat('yyyy-MM-dd').format(_endDate!) : ''}'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditableCalendarDetails() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          TextField(
+            controller: TextEditingController(text: _calendarName),
+            onChanged: (value) {
+              _calendarName = value;
+            },
+            decoration: const InputDecoration(
+              labelText: '일정 이름',
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: _startDate ?? DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+              if (pickedDate != null) {
+                setState(() {
+                  _startDate = pickedDate;
+                });
+              }
+            },
+            child: Text(
+              _startDate == null ? '시작 날짜 선택' : '시작 날짜: ${DateFormat('yyyy-MM-dd').format(_startDate!)}',
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: _endDate ?? DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+              if (pickedDate != null) {
+                setState(() {
+                  _endDate = pickedDate;
+                });
+              }
+            },
+            child: Text(
+              _endDate == null ? '종료 날짜 선택' : '종료 날짜: ${DateFormat('yyyy-MM-dd').format(_endDate!)}',
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _updateCalendarDetails();
+              setState(() {
+                _isEditingCalendarDetails = false;
+                _loadDateList();
+              });
+            },
+            child: const Text('저장'),
+          ),
+        ],
       ),
     );
   }
