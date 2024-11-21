@@ -19,14 +19,28 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: const ColorScheme(
           primary: Color(0xFF40BCCB), // PANTONE 311C
-          primaryContainer: Color(0xFFF3A7AC), // PANTONE 494C
+          onPrimary: Color(0xFF167783),
+
           secondary: Color(0xFF0099CC), // PANTONE 2192C
+          onSecondary: Color(0xFF006590),
+
+          secondaryContainer: Color(0xFFEAEAEA),
+          tertiaryContainer: Color(0xFFA7A6A6),
+
+          primaryContainer: Color(0xFFF3A7AC), // PANTONE 494C
+          onPrimaryContainer: Color.fromRGBO(172, 123, 125, 1),
+
+          tertiary: Color(0xFFFFFEEA),
+          onTertiary: Color(0xFFABAA92),
+
           surface: Color(0xFFFFFFFF), // PANTONE White C
+          onSurface: Color(0xFFF5F5F5),
+
           error: Colors.red, // 기본 오류 색상
-          onPrimary: Colors.white,
-          onSecondary: Color(0xFFEAEAEA),
-          onSurface: Colors.black,
           onError: Colors.white,
+
+          outline: Color(0xFF000000),
+          shadow: Color(0x3E000000),
 
           brightness: Brightness.light, // 밝은 테마
         ),
