@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'add_plan/trip_list.dart';
 
-class MainPage extends StatefulWidget {
+class HomePage extends StatefulWidget {
   final VoidCallback onNavigateToMyTravel;
 
-  const MainPage({super.key, required this.onNavigateToMyTravel});
+  const HomePage({super.key, required this.onNavigateToMyTravel});
 
   @override
-  _MainPageState createState() => _MainPageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _HomePageState extends State<HomePage> {
   final PageController _pageController = PageController();
 
   @override
@@ -121,7 +122,13 @@ class _MainPageState extends State<MainPage> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.add),
-                  onPressed: widget.onNavigateToMyTravel, // "나의 여행" 페이지로 이동
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const TripList()), // 이동할 페이지 지정
+                    );
+                  },
                 ),
                 IconButton(
                   icon: const Icon(Icons.arrow_forward_ios),

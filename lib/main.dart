@@ -1,9 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:truple_practice/pages/user_auth/signin.dart';
-import 'main_page.dart';
-import 'user_page.dart';
 
 //google api key = AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4
 void main() async {

@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:truple_practice/home_page.dart';
+import 'package:truple_practice/pages/main_page.dart';
 import 'package:truple_practice/pages/user_auth/signin.dart';
 import 'package:flutter/material.dart';
 
@@ -37,7 +37,7 @@ class _SignUpState extends State<SignUp> {
             )));
         // 홈 페이지로 이동
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const HomePage()));
+            context, MaterialPageRoute(builder: (context) => const MainPage()));
       } on FirebaseAuthException catch (e) {
         // Firebase 인증 오류를 처리
         if (e.code == 'weak-password') {

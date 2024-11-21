@@ -1,68 +1,14 @@
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
-import 'package:truple_practice/pages/user_auth/signin.dart';
-import 'main_page.dart';
-import 'user_page.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class InfoPage extends StatefulWidget {
+  const InfoPage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  _InfoPageState createState() => _InfoPageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 1;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  // "나의 여행" 페이지로 이동하기 위한 메서드
-  void navigateToMyTravelPage() {
-    setState(() {
-      _selectedIndex = 0;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: 0,
-        children: [
-          MainPage(
-            onNavigateToMyTravel: navigateToMyTravelPage, // HomePage에서 호출될 메서드
-          ),
-          const UserPage(),
-          const TravelCalendarPage(),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        elevation: 8.0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
-          BottomNavigationBarItem(icon: Icon(Icons.book), label: '나의 여행'),
-          BottomNavigationBarItem(icon: Icon(Icons.info), label: '정보'),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Theme.of(context).primaryColorDark,
-        onTap: _onItemTapped,
-      ),
-    );
-  }
-}
-
-class TravelCalendarPage extends StatefulWidget {
-  const TravelCalendarPage({super.key});
-
-  @override
-  _TravelCalendarPageState createState() => _TravelCalendarPageState();
-}
-
-class _TravelCalendarPageState extends State<TravelCalendarPage> {
+class _InfoPageState extends State<InfoPage> {
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
 
