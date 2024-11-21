@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:truple_practice/pages/main/home_page.dart';
+import 'package:truple_practice/home_page.dart';
 import 'package:truple_practice/services/database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';

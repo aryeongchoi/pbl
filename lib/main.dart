@@ -1,6 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:truple_practice/pages/user_auth/signup.dart';
+import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:truple_practice/pages/user_auth/signin.dart';
+import 'main_page.dart';
+import 'user_page.dart';
 
 //google api key = AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4
 void main() async {
@@ -12,11 +15,10 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // 이 위젯은 애플리케이션의 루트입니다.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Trupple',
+      title: '여행 캘린더 앱',
       theme: ThemeData(
         primarySwatch: Colors.deepOrange,
         fontFamily: 'Pretendard-Medium',
@@ -28,8 +30,7 @@ class MyApp extends StatelessWidget {
         primaryColorLight: const Color.fromARGB(255, 0, 153, 217),
         primaryColorDark: const Color.fromARGB(255, 0, 0, 0),
       ),
-      debugShowCheckedModeBanner: false,
-      home: const SignUp(),
+      home: const SignIn(),
     );
   }
 }

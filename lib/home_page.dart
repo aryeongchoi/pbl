@@ -1,7 +1,8 @@
+import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:truple_practice/pages/user_auth/signin.dart';
 import 'main_page.dart';
 import 'user_page.dart';
-import 'package:table_calendar/table_calendar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,7 +12,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -22,17 +23,15 @@ class _HomePageState extends State<HomePage> {
   // "나의 여행" 페이지로 이동하기 위한 메서드
   void navigateToMyTravelPage() {
     setState(() {
-      _selectedIndex = 1;
+      _selectedIndex = 0;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("Navigation to HomePage");
     return Scaffold(
-      backgroundColor: Colors.transparent,
       body: IndexedStack(
-        index: _selectedIndex,
+        index: 0,
         children: [
           MainPage(
             onNavigateToMyTravel: navigateToMyTravelPage, // HomePage에서 호출될 메서드
