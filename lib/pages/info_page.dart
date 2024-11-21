@@ -1,5 +1,6 @@
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:truple_practice/widgets/appbar.dart';
 
 class InfoPage extends StatefulWidget {
   const InfoPage({super.key});
@@ -26,41 +27,6 @@ class _InfoPageState extends State<InfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                  color: Theme.of(context).colorScheme.shadow,
-                  offset: const Offset(0, 0),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                  blurStyle: BlurStyle.normal)
-            ],
-            color: Theme.of(context).colorScheme.tertiary,
-            borderRadius: BorderRadius.circular(45),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircleAvatar(
-                radius: 5, // 동그라미 크기 설정
-                backgroundColor: Colors.teal, // 동그라미 색상 설정
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '신난 고슴도치 님',
-                style: TextStyle(
-                    fontSize: 18,
-                    color: Theme.of(context).colorScheme.onSurface),
-              ),
-            ],
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: Stack(
         alignment: Alignment.topCenter,
         children: [
@@ -72,8 +38,9 @@ class _InfoPageState extends State<InfoPage> {
                 BoxShadow(
                     color: Theme.of(context).colorScheme.shadow,
                     offset: const Offset(0, 0),
-                    blurRadius: 20,
-                    spreadRadius: 1),
+                    blurRadius: 6,
+                    spreadRadius: 2,
+                    blurStyle: BlurStyle.normal)
               ],
               color: Theme.of(context).colorScheme.tertiary,
               borderRadius: BorderRadius.circular(30),

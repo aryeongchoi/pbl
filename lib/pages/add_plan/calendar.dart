@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'add_place_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:truple_practice/widgets/appbar.dart';
 
 class Calendar extends StatefulWidget {
   final String calendarId;
@@ -164,36 +165,8 @@ class _CalendarState extends State<Calendar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(45),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).colorScheme.shadow,
-                offset: const Offset(0, 0),
-                blurRadius: 10,
-                spreadRadius: 1,
-                blurStyle: BlurStyle.normal,
-              ),
-            ],
-          ),
-          child: const Text(
-            '여행일정',
-            style: TextStyle(fontSize: 18, color: Colors.black),
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); // 뒤로가기 버튼 동작
-          },
-        ),
+      appBar: CustomAppBar(
+        title: '여행일정 목록', // AppBar 제목 설정
         actions: [
           IconButton(
             icon: Icon(

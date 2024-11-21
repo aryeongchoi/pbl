@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:truple_practice/widgets/appbar.dart';
 import 'add_plan/calendar.dart';
 
 class MyTripPage extends StatefulWidget {
@@ -12,66 +13,12 @@ class MyTripPage extends StatefulWidget {
 }
 
 class _MyTripPageState extends State<MyTripPage> {
-  bool _isEditing = false;
+  final bool _isEditing = false;
 
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     return Scaffold(
-      appBar: AppBar(
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(45),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).colorScheme.shadow,
-                offset: const Offset(0, 0),
-                blurRadius: 10,
-                spreadRadius: 1,
-                blurStyle: BlurStyle.normal,
-              ),
-            ],
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 5,
-                backgroundColor: Colors.teal,
-              ),
-              SizedBox(width: 8),
-              Text(
-                '신난 고슴도치 님',
-                style: TextStyle(fontSize: 18, color: Colors.black),
-              ),
-            ],
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); // 뒤로가기 버튼 동작
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isEditing ? Icons.done : Icons.edit,
-              color: Colors.black,
-            ),
-            onPressed: () {
-              setState(() {
-                _isEditing = !_isEditing; // 편집 모드 토글
-              });
-            },
-          ),
-        ],
-      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
@@ -99,66 +46,77 @@ class _MyTripPageState extends State<MyTripPage> {
               final duration = endDate.difference(startDate).inDays + 1;
 
               return Card(
-                margin: const EdgeInsets.only(bottom: 16.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                elevation: 4.0,
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16.0),
-                  title: Text(
-                    calendar['name'] ?? 'Unnamed Calendar',
-                    style: const TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                    ),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 5),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Theme.of(context).colorScheme.tertiary,
+                    boxShadow: [
+                      BoxShadow(
+                          color: Theme.of(context).colorScheme.shadow,
+                          offset: const Offset(0, 0),
+                          blurRadius: 10,
+                          spreadRadius: 1,
+                          blurStyle: BlurStyle.normal)
+                    ],
                   ),
-                  subtitle: Text(
-                    '$formattedStartDate ~ $formattedEndDate ($duration일)',
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                  trailing: _isEditing
-                      ? IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () async {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text('삭제 확인'),
-                                  content: const Text('정말로 이 일정을 삭제하시겠습니까?'),
-                                  actions: [
-                                    TextButton(
-                                      child: const Text('취소'),
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(false),
-                                    ),
-                                    TextButton(
-                                      child: const Text('삭제'),
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(true),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-
-                            if (confirm == true) {
-                              await _deleteCalendar(userId, calendar.id);
-                            }
-                          },
-                        )
-                      : const Icon(Icons.arrow_forward_ios,
-                          color: Colors.black),
-                  onTap: () {
-                    // 특정 일정 페이지로 이동
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Calendar(calendarId: calendar.id),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16.0),
+                    title: Text(
+                      calendar['name'] ?? 'Unnamed Calendar',
+                      style: const TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  },
+                    ),
+                    subtitle: Text(
+                      '$formattedStartDate ~ $formattedEndDate ($duration일)',
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                    trailing: _isEditing
+                        ? IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () async {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text('삭제 확인'),
+                                    content: const Text('정말로 이 일정을 삭제하시겠습니까?'),
+                                    actions: [
+                                      TextButton(
+                                        child: const Text('취소'),
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(false),
+                                      ),
+                                      TextButton(
+                                        child: const Text('삭제'),
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(true),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+
+                              if (confirm == true) {
+                                await _deleteCalendar(userId, calendar.id);
+                              }
+                            },
+                          )
+                        : const Icon(Icons.arrow_forward_ios,
+                            color: Colors.black),
+                    onTap: () {
+                      // 특정 일정 페이지로 이동
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              Calendar(calendarId: calendar.id),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               );
             },

@@ -162,12 +162,6 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); // 뒤로가기 버튼 동작
-          },
-        ),
       ),
       body: Column(
         children: [

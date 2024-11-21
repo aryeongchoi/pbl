@@ -103,7 +103,7 @@ class _SignInState extends State<SignIn> {
                       const SizedBox(height: 20),
                       // 로그인 버튼
                       SizedBox(
-                        width: double.infinity,
+                        width: double.maxFinite,
                         child: ElevatedButton(
                           onPressed: () {
                             setState(() {

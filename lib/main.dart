@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
           onError: Colors.white,
 
           outline: Color(0xFF000000),
-          shadow: Color.fromARGB(3, 0, 0, 0),
+          shadow: Color.fromARGB(23, 0, 0, 0),
 
           brightness: Brightness.light, // 밝은 테마
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:truple_practice/widgets/appbar.dart';
 
 class ListCalendar extends StatefulWidget {
   const ListCalendar({super.key});
@@ -18,36 +19,8 @@ class _ListCalendarState extends State<ListCalendar> {
     final userId = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(45),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).colorScheme.shadow,
-                offset: const Offset(0, 0),
-                blurRadius: 10,
-                spreadRadius: 1,
-                blurStyle: BlurStyle.normal,
-              ),
-            ],
-          ),
-          child: const Text(
-            '여행일정 목록',
-            style: TextStyle(fontSize: 18, color: Colors.black),
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); // 뒤로가기 버튼 동작
-          },
-        ),
+      appBar: CustomAppBar(
+        title: '여행일정 목록', // AppBar 제목 설정
         actions: [
           IconButton(
             icon: Icon(
@@ -131,12 +104,17 @@ class _ListCalendarState extends State<ListCalendar> {
         },
       ),
       floatingActionButton: SizedBox(
-        width: MediaQuery.of(context).size.width,
+        width: MediaQuery.of(context).size.width * 0.91,
+        height: 78,
         child: FloatingActionButton(
           onPressed: () {
             _showAddCalendarDialog(context, userId);
           },
-          child: const Icon(Icons.add),
+          backgroundColor: Theme.of(context).colorScheme.primary, // 버튼 배경색
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30), // 둥근 모서리 설정
+          ),
+          child: const Text("일정 추가"),
         ),
       ),
     );

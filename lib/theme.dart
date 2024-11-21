@@ -15,10 +15,10 @@ final ThemeData appTheme = ThemeData(
     brightness: Brightness.light, // 밝은 테마
   ),
   appBarTheme: const AppBarTheme(
-    backgroundColor: Color(0xFF40BCCB), // AppBar와 프로필 배경을 같은 색상으로
-    titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
-    centerTitle: true,
-  ),
+      backgroundColor: Color(0xFF40BCCB), // AppBar와 프로필 배경을 같은 색상으로
+      titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+      centerTitle: true,
+      iconTheme: IconThemeData()),
   floatingActionButtonTheme: const FloatingActionButtonThemeData(
     backgroundColor: Color(0xFF0099CC), // FAB 버튼 색상
   ),

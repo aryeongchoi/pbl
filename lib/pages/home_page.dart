@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:truple_practice/widgets/appbar.dart';
 import 'add_plan/list_calendar.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,41 +17,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(45),
-              boxShadow: [
-                BoxShadow(
-                    color: Theme.of(context).colorScheme.shadow,
-                    offset: const Offset(0, 0),
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                    blurStyle: BlurStyle.normal)
-              ]),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 5,
-                backgroundColor: Colors.teal,
-              ),
-              SizedBox(width: 8),
-              Text(
-                '신난 고슴도치 님',
-                style: TextStyle(fontSize: 18, color: Colors.black),
-              ),
-            ],
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: const Center(
+    return const Scaffold(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -114,16 +82,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            CupertinoPageRoute(
-                builder: (context) => const ListCalendar()), // 이동할 페이지 지정
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }
@@ -147,6 +105,7 @@ class TravelCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
               color: Theme.of(context).colorScheme.shadow,
