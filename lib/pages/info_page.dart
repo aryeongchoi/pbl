@@ -25,22 +25,21 @@ class _InfoPageState extends State<InfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).canvasColor,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).canvasColor,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Container(
-          margin: const EdgeInsets.only(top: 15),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 5,
-                blurRadius: 20,
-                offset: const Offset(0, 0), // changes position of shadow
-              ),
+                  color: Theme.of(context).colorScheme.shadow,
+                  offset: const Offset(0, 0),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                  blurStyle: BlurStyle.normal)
             ],
-            color: Theme.of(context).canvasColor,
+            color: Theme.of(context).colorScheme.tertiary,
             borderRadius: BorderRadius.circular(45),
           ),
           child: Row(
@@ -54,7 +53,8 @@ class _InfoPageState extends State<InfoPage> {
               Text(
                 '신난 고슴도치 님',
                 style: TextStyle(
-                    fontSize: 18, color: Theme.of(context).primaryColorDark),
+                    fontSize: 18,
+                    color: Theme.of(context).colorScheme.onSurface),
               ),
             ],
           ),
@@ -70,16 +70,13 @@ class _InfoPageState extends State<InfoPage> {
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 10,
-                  blurRadius: 30,
-                  offset: const Offset(0, -3), // changes position of shadow
-                ),
+                    color: Theme.of(context).colorScheme.shadow,
+                    offset: const Offset(0, 0),
+                    blurRadius: 20,
+                    spreadRadius: 1),
               ],
-              color: Theme.of(context).canvasColor,
+              color: Theme.of(context).colorScheme.tertiary,
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                  color: Theme.of(context).focusColor, width: 1), // 테두리 추가
             ),
             child: Center(
               child: Column(
@@ -171,11 +168,11 @@ class _InfoPageState extends State<InfoPage> {
       },
       calendarStyle: CalendarStyle(
         todayDecoration: BoxDecoration(
-          color: Theme.of(context).primaryColorDark,
+          color: Theme.of(context).colorScheme.primary,
           shape: BoxShape.circle,
         ),
         selectedDecoration: BoxDecoration(
-          color: Theme.of(context).highlightColor,
+          color: Theme.of(context).colorScheme.primaryContainer,
           shape: BoxShape.circle,
         ),
         outsideDaysVisible: false,
@@ -186,9 +183,9 @@ class _InfoPageState extends State<InfoPage> {
       calendarBuilders: CalendarBuilders(
         markerBuilder: (context, day, events) {
           if (previousDates.contains(day)) {
-            return _buildMarker(day, Theme.of(context).highlightColor);
+            return _buildMarker(day, Theme.of(context).colorScheme.primary);
           } else if (upcomingDates.contains(day)) {
-            return _buildMarker(day, Theme.of(context).primaryColorDark);
+            return _buildMarker(day, Theme.of(context).colorScheme.secondary);
           }
           return null;
         },

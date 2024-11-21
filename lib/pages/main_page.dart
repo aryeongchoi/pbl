@@ -47,7 +47,6 @@ class _HomePageState extends State<MainPage> {
           BottomNavigationBarItem(icon: Icon(Icons.info), label: '정보'),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Theme.of(context).primaryColorDark,
         onTap: _onItemTapped,
       ),
     );
