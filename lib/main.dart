@@ -28,20 +28,19 @@ class MyApp extends StatelessWidget {
           tertiaryContainer: Color(0xFFA7A6A6),
 
           primaryContainer: Color(0xFFF3A7AC), // PANTONE 494C
-          onPrimaryContainer: Color.fromRGBO(172, 123, 125, 1),
+          onPrimaryContainer: Color(0xFFAC7B7D),
 
-          tertiary: Color.fromRGBO(255, 254, 234, 1),
+          tertiary: Colors.white,
           onTertiary: Color(0xFFABAA92),
 
-          surface: Color(0xFFFFFFFF), // PANTONE White C
-
+          surface: Color.fromARGB(255, 242, 242, 242), // PANTONE White C
           onSurface: Color.fromARGB(255, 31, 31, 31), //글자랑 아이콘 색
 
           error: Colors.red, // 기본 오류 색상
           onError: Colors.white,
 
           outline: Color(0xFF000000),
-          shadow: Color(0x3E000000),
+          shadow: Color.fromARGB(3, 0, 0, 0),
 
           brightness: Brightness.light, // 밝은 테마
         ),
@@ -51,11 +50,12 @@ class MyApp extends StatelessWidget {
           centerTitle: true,
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Color(0xFF0099CC), // FAB 버튼 색상
+          backgroundColor: Color(0xFF40BCCB), // FAB 버튼 색상
+          foregroundColor: Colors.white,
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           backgroundColor: Colors.white,
-          selectedItemColor: Color(0xFF0099CC),
+          selectedItemColor: Color(0xFF40BCCB),
           unselectedItemColor: Colors.grey,
         ),
       ),
