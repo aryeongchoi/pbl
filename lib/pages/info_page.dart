@@ -46,10 +46,10 @@ class _InfoPageState extends State<InfoPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const CircleAvatar(
-                radius: 8, // 동그라미 크기 설정
+                radius: 5, // 동그라미 크기 설정
                 backgroundColor: Colors.teal, // 동그라미 색상 설정
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Text(
                 '신난 고슴도치 님',
                 style: TextStyle(
