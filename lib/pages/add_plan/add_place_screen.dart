@@ -7,6 +7,7 @@ import 'package:truple_practice/widgets/appbar.dart';
 import 'calendar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'calendar.dart';
 
 class AddPlaceScreen extends StatefulWidget {
   final String calendarId;
@@ -216,7 +217,8 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Calendar(calendarId: widget.calendarId),
+                  builder: (context) => Calendar(
+                      calendarId: widget.calendarId, dayId: widget.dayId),
                 ),
               );
             } else {

@@ -128,8 +128,8 @@ class _ListCalendarState extends State<ListCalendar> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              Calendar(calendarId: calendar.id),
+                          builder: (context) => Calendar(
+                              calendarId: calendar.id, dayId: calendar.id),
                         ),
                       );
                     },
