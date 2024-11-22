@@ -7,7 +7,6 @@ import 'package:truple_practice/widgets/appbar.dart';
 import 'calendar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'calendar.dart';
 
 class AddPlaceScreen extends StatefulWidget {
   final String calendarId;
@@ -27,7 +26,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
       "AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4"; // Google API Key
 
   Future<void> _addPlaceToFirestore(
-      Prediction prediction, double latitude, double longitude) async {
+      Prediction prediction, double latitude, double longitude, String dayId) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
       try {
@@ -42,13 +41,14 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
 
         final nextOrderValue = await _getNextOrderValue();
 
+        // Firestore에 장소 추가
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userId)
             .collection('calendars')
             .doc(widget.calendarId)
             .collection('dates')
-            .doc(widget.dayId) // 전달받은 dayId 사용
+            .doc(dayId) // 'day01', 'day02'와 같은 형식으로 사용
             .collection('places')
             .add({
           'name': shortDescription,
@@ -62,8 +62,6 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
         print('Place added with coordinates: ($latitude, $longitude)');
       } catch (e) {
         print('Failed to add place to Firestore: $e');
-        print(
-            'Prediction details: ${prediction.description}, lat: $latitude, lng: $longitude');
       }
     } else {
       print('User is not logged in.');
@@ -209,7 +207,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
                 final longitude = double.tryParse(place.lng ?? '') ?? 0.0;
 
                 if (latitude != 0.0 && longitude != 0.0) {
-                  await _addPlaceToFirestore(place, latitude, longitude);
+                  await _addPlaceToFirestore(place, latitude, longitude, widget.dayId);
                 } else {
                   print('Invalid coordinates for place: ${place.description}');
                 }
