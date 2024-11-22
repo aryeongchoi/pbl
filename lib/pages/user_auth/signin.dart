@@ -20,8 +20,10 @@ class _SignInState extends State<SignIn> {
   userLogin() async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: 'admin@admin.com',
+        password: 'admin123',
+        //email: email,
+        //password: password,
       );
       Navigator.push(
         context,

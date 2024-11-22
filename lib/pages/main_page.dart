@@ -16,7 +16,12 @@ class MainPage extends StatefulWidget {
 class _HomePageState extends State<MainPage> {
   int _selectedIndex = 0;
 
-  final List<String> _appBarTitles = ['홈', '나의 여행', '정보']; // 페이지에 따른 AppBar 제목
+  final List<String> _appBarTitles = [
+    '홈',
+    '나의 여행',
+    '정보',
+    '에러'
+  ]; // 페이지에 따른 AppBar 제목
 
   void _onItemTapped(int index) {
     setState(() {
@@ -73,8 +78,8 @@ class _HomePageState extends State<MainPage> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(30),
                 child: BottomNavigationBar(
-                  elevation: 3,
-                  type: BottomNavigationBarType.shifting,
+                  elevation: 4,
+                  type: BottomNavigationBarType.fixed,
                   selectedItemColor:
                       Theme.of(context).colorScheme.primary, // 선택된 아이템 색상
                   unselectedItemColor: Colors.grey, // 선택되지 않은 아이템 색상
@@ -98,8 +103,8 @@ class _HomePageState extends State<MainPage> {
                     ),
                     BottomNavigationBarItem(
                       backgroundColor: Colors.white,
-                      icon: Icon(Icons.favorite),
-                      label: '',
+                      icon: Icon(Icons.face_6_rounded),
+                      label: '유저',
                     )
                   ],
                 ),
@@ -108,7 +113,9 @@ class _HomePageState extends State<MainPage> {
           ),
         ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
+        margin: const EdgeInsets.only(bottom: 60),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
@@ -120,8 +127,8 @@ class _HomePageState extends State<MainPage> {
             ),
           ],
         ),
-        width: 80,
-        height: 80,
+        width: 60,
+        height: 60,
         child: FloatingActionButton(
           onPressed: () {
             Navigator.push(

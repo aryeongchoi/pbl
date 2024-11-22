@@ -13,7 +13,7 @@ class _FirstSurveyPageState extends State<FirstSurveyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: "설문"),
+      appBar: const CustomAppBar(title: '설문'),
       body: Column(
         children: [
           const SizedBox(height: 60), // 상단 여백

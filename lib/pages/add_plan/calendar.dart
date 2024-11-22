@@ -378,7 +378,7 @@ class _CalendarState extends State<Calendar> {
                           final placeDoc = places[index];
                           final place = placeDoc.data() as Map<String, dynamic>;
                           final geoPoint = place['location'] as GeoPoint;
-                          final order = place['order'] as int;
+                          // final order = place['order'] as int;
 
                           return ListTile(
                             key: ValueKey(placeDoc.id),
@@ -518,7 +518,7 @@ class _CalendarState extends State<Calendar> {
               setState(() {
                 _startDate = pickedDate;
               });
-                        },
+            },
             child: Text(
               _startDate == null
                   ? '시작 날짜 선택'
@@ -536,7 +536,7 @@ class _CalendarState extends State<Calendar> {
               setState(() {
                 _endDate = pickedDate;
               });
-                        },
+            },
             child: Text(
               _endDate == null
                   ? '종료 날짜 선택'
