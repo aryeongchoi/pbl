@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:truple_practice/pages/add_plan/survey1_page.dart';
 import 'calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -145,7 +146,12 @@ class _ListCalendarState extends State<ListCalendar> {
         height: 80,
         child: FloatingActionButton(
           onPressed: () {
-            _showAddCalendarDialog(context, userId);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) =>
+                    const FirstSurveyPage(), // SecondSurveyPage는 위젯이어야 함
+              ),
+            );
           },
           backgroundColor: Theme.of(context).colorScheme.primary, // 버튼 배경색
           shape: RoundedRectangleBorder(

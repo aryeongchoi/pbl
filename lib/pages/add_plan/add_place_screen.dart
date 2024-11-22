@@ -7,7 +7,6 @@ import 'package:truple_practice/widgets/appbar.dart';
 import 'calendar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'calendar.dart';
 
 class AddPlaceScreen extends StatefulWidget {
   final String calendarId;

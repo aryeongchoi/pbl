@@ -28,15 +28,7 @@ class _SignInState extends State<SignIn> {
         MaterialPageRoute(builder: (context) => const MainPage()),
       );
     } on FirebaseAuthException catch (e) {
-      String message = e.code == 'user-not-found'
-          ? "해당 이메일로 등록된 사용자를 찾을 수 없습니다."
-          : "잘못된 비밀번호입니다.";
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.orangeAccent,
-          content: Text(message, style: const TextStyle(fontSize: 16.0)),
-        ),
-      );
+      print('error $e.message');
     }
   }
 
