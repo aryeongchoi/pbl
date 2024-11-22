@@ -1,6 +1,5 @@
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
-import 'package:truple_practice/widgets/appbar.dart';
 
 class InfoPage extends StatefulWidget {
   const InfoPage({super.key});

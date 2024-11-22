@@ -33,14 +33,14 @@ class MyApp extends StatelessWidget {
           tertiary: Colors.white,
           onTertiary: Color(0xFFABAA92),
 
-          surface: Color.fromARGB(255, 242, 242, 242), // PANTONE White C
+          surface: Color.fromARGB(255, 250, 250, 250), // PANTONE White C
           onSurface: Color.fromARGB(255, 31, 31, 31), //글자랑 아이콘 색
 
           error: Colors.red, // 기본 오류 색상
           onError: Colors.white,
 
           outline: Color(0xFF000000),
-          shadow: Color.fromARGB(23, 0, 0, 0),
+          shadow: Color.fromARGB(10, 0, 0, 0),
 
           brightness: Brightness.light, // 밝은 테마
         ),

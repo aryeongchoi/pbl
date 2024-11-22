@@ -190,12 +190,12 @@ class _CalendarState extends State<Calendar> {
               margin: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
-                      color: Color.fromARGB(20, 0, 0, 0),
-                      offset: Offset(0, -10),
+                      color: Theme.of(context).colorScheme.shadow,
+                      offset: const Offset(0, -10),
                       spreadRadius: 1,
-                      blurRadius: 20,
+                      blurRadius: 10,
                     ),
                   ]),
               clipBehavior: Clip.antiAlias,
@@ -227,13 +227,25 @@ class _CalendarState extends State<Calendar> {
               itemCount: _dateList.length,
               itemBuilder: (context, index) {
                 final dateId = _dateList[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                return Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).colorScheme.shadow,
+                          offset: const Offset(0, 0),
+                          blurRadius: 5,
+                          spreadRadius: 0.1,
+                        )
+                      ]),
+                  margin: const EdgeInsets.all(5),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
                       backgroundColor: _selectedDay == dateId
                           ? Theme.of(context).colorScheme.primary
-                          : Colors.grey[300], // 버튼 크기 조절
+                          : Colors.white, // 버튼 크기 조절
                     ),
                     onPressed: () {
                       setState(() {
@@ -363,30 +375,34 @@ class _CalendarState extends State<Calendar> {
                         },
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: const Text("일정 추가"),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AddPlaceScreen(
-                                calendarId: widget.calendarId,
-                                dayId: _selectedDay!,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
                   ],
                 );
               },
             ),
           ),
         ],
+      ),
+      floatingActionButton: SizedBox(
+        width: 80,
+        height: 80,
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddPlaceScreen(
+                  calendarId: widget.calendarId,
+                  dayId: _selectedDay!,
+                ),
+              ),
+            );
+          },
+          backgroundColor: Theme.of(context).colorScheme.primary, // 버튼 배경색
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30), // 둥근 모서리 설정
+          ),
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }

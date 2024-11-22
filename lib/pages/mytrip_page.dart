@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import 'package:truple_practice/widgets/appbar.dart';
 import 'add_plan/calendar.dart';
 
 class MyTripPage extends StatefulWidget {
@@ -56,7 +55,7 @@ class _MyTripPageState extends State<MyTripPage> {
                           color: Theme.of(context).colorScheme.shadow,
                           offset: const Offset(0, 0),
                           blurRadius: 10,
-                          spreadRadius: 1,
+                          spreadRadius: 0.5,
                           blurStyle: BlurStyle.normal)
                     ],
                   ),

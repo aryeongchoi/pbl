@@ -1,7 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:truple_practice/widgets/appbar.dart';
-import 'add_plan/list_calendar.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onNavigateToMyTravel;
@@ -110,7 +108,7 @@ class TravelCard extends StatelessWidget {
           BoxShadow(
               color: Theme.of(context).colorScheme.shadow,
               offset: const Offset(0, 0),
-              blurRadius: 10,
+              blurRadius: 5,
               spreadRadius: 1,
               blurStyle: BlurStyle.normal)
         ],

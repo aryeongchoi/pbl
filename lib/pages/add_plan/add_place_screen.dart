@@ -3,6 +3,7 @@ import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_places_flutter/model/prediction.dart';
+import 'package:truple_practice/widgets/appbar.dart';
 import 'calendar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -138,31 +139,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(45),
-            boxShadow: [
-              BoxShadow(
-                color: Theme.of(context).colorScheme.shadow,
-                offset: const Offset(0, 0),
-                blurRadius: 10,
-                spreadRadius: 1,
-                blurStyle: BlurStyle.normal,
-              ),
-            ],
-          ),
-          child: const Text(
-            '여행일정 목록',
-            style: TextStyle(fontSize: 18, color: Colors.black),
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: const CustomAppBar(title: '검색'),
       body: Column(
         children: [
           GooglePlaceAutoCompleteTextField(
@@ -218,38 +195,40 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
               },
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8.0),
-            color: Colors.white,
-            child: ElevatedButton(
-              onPressed: () async {
-                if (_selectedPlaces.isNotEmpty) {
-                  for (var place in _selectedPlaces) {
-                    final latitude = double.tryParse(place.lat ?? '') ?? 0.0;
-                    final longitude = double.tryParse(place.lng ?? '') ?? 0.0;
-
-                    if (latitude != 0.0 && longitude != 0.0) {
-                      await _addPlaceToFirestore(place, latitude, longitude);
-                    } else {
-                      print(
-                          'Invalid coordinates for place: ${place.description}');
-                    }
-                  }
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          Calendar(calendarId: widget.calendarId),
-                    ),
-                  );
-                } else {
-                  print('No place selected to add.');
-                }
-              },
-              child: const Text('선택 완료'),
-            ),
-          )
         ],
+      ),
+      floatingActionButton: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.91,
+        height: 80,
+        child: FloatingActionButton(
+          onPressed: () async {
+            if (_selectedPlaces.isNotEmpty) {
+              for (var place in _selectedPlaces) {
+                final latitude = double.tryParse(place.lat ?? '') ?? 0.0;
+                final longitude = double.tryParse(place.lng ?? '') ?? 0.0;
+
+                if (latitude != 0.0 && longitude != 0.0) {
+                  await _addPlaceToFirestore(place, latitude, longitude);
+                } else {
+                  print('Invalid coordinates for place: ${place.description}');
+                }
+              }
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Calendar(calendarId: widget.calendarId),
+                ),
+              );
+            } else {
+              print('No place selected to add.');
+            }
+          },
+          backgroundColor: Theme.of(context).colorScheme.primary, // 버튼 배경색
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30), // 둥근 모서리 설정
+          ),
+          child: const Text("장소 추가"),
+        ),
       ),
     );
   }
