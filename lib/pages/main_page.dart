@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:truple_practice/pages/add_plan/list_calendar.dart';
+import 'package:truple_practice/pages/add_plan/survey1_page.dart';
 import 'package:truple_practice/pages/home_page.dart';
 import 'package:truple_practice/widgets/appbar.dart';
 import 'info_page.dart';
@@ -131,10 +131,10 @@ class _HomePageState extends State<MainPage> {
         height: 60,
         child: FloatingActionButton(
           onPressed: () {
-            Navigator.push(
-              context,
+            Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => const ListCalendar(),
+                builder: (context) =>
+                    const FirstSurveyPage(), // SecondSurveyPage는 위젯이어야 함
               ),
             );
           },
