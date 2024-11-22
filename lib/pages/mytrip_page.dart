@@ -110,8 +110,10 @@ class _MyTripPageState extends State<MyTripPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              Calendar(calendarId: calendar.id),
+                          builder: (context) => Calendar(
+                            calendarId: calendar.id,
+                            dayId: calendar.id,
+                          ),
                         ),
                       );
                     },

@@ -225,7 +225,6 @@ class _CalendarState extends State<Calendar> {
     return Scaffold(
       appBar: CustomAppBar(
         title: '여행일정 목록', // AppBar 제목 설정
-
         actions: [
           IconButton(
             icon: Icon(
