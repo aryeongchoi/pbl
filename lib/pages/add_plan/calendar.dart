@@ -3,9 +3,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'add_place_screen.dart';
+import 'list_other_users_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:google_maps_custom_marker/google_maps_custom_marker.dart';
 import 'dart:convert';
 
 
@@ -243,7 +245,7 @@ class _CalendarState extends State<Calendar> {
   }
 
   void _loadDayItinerary(String dayId) async {
-    //일정 불러오기
+    // 일정 불러오기
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
       final placesSnapshot = await FirebaseFirestore.instance
@@ -260,19 +262,26 @@ class _CalendarState extends State<Calendar> {
       Set<Marker> markers = {};
       List<LatLng> polylineCoordinates = [];
 
-      for (var placeDoc in placesSnapshot.docs) {
+      for (int i = 0; i < placesSnapshot.docs.length; i++) {
+        final placeDoc = placesSnapshot.docs[i];
         final data = placeDoc.data();
         final geoPoint = data['location'] as GeoPoint;
         final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
 
-        markers.add(Marker(
-          markerId: MarkerId(placeDoc.id),
-          position: latLng,
-          infoWindow: InfoWindow(title: data['name']),
-          icon:
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-        ));
+        // 커스텀 마커 생성
+        Marker marker = await GoogleMapsCustomMarker.createCustomMarker(
+          marker: Marker(
+            markerId: MarkerId('pin_labeled_$i'),
+            position: latLng,
+          ),
+          shape: MarkerShape.pin,
+          backgroundColor: GoogleMapsCustomMarkerColor
+              .markerColors[i % GoogleMapsCustomMarkerColor.markerColors.length],
+          title: (i + 1).toString(), // 장소 순서에 맞춰 숫자를 표시
+          pinOptions: PinMarkerOptions(diameter: 30),
+        );
 
+        markers.add(marker);
         polylineCoordinates.add(latLng);
       }
 
@@ -297,23 +306,11 @@ class _CalendarState extends State<Calendar> {
     );
   }
 
-  Future<void> _updatePlaceOrder(String dayId) async {
-    // 장소 순서 변경시 order 최신화
+  Future<void> _updatePlaceOrder(String dayId, List<QueryDocumentSnapshot> places) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
-      final places = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('calendars')
-          .doc(widget.calendarId)
-          .collection('dates')
-          .doc(dayId)
-          .collection('places')
-          .orderBy('order')
-          .get();
-
-      for (int i = 0; i < places.docs.length; i++) {
-        final placeDoc = places.docs[i];
+      for (int i = 0; i < places.length; i++) {
+        final placeDoc = places[i];
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userId)
@@ -323,7 +320,7 @@ class _CalendarState extends State<Calendar> {
             .doc(dayId)
             .collection('places')
             .doc(placeDoc.id)
-            .update({'order': i}); // 순서를 1부터 재설정
+            .update({'order': i + 1}); // 0부터 재설정
       }
     }
   }
@@ -603,7 +600,7 @@ class _CalendarState extends State<Calendar> {
                           }
                           final item = places.removeAt(oldIndex);
                           places.insert(newIndex, item);
-                          await _updatePlaceOrder(_selectedDay!);
+                          await _updatePlaceOrder(_selectedDay!, places);
                           setState(() {
                             _loadDayItinerary(_selectedDay!);
                           });
@@ -660,7 +657,7 @@ class _CalendarState extends State<Calendar> {
                                       .doc(placeDoc.id)
                                       .delete();
 
-                                  await _updatePlaceOrder(_selectedDay!);
+                                  await _updatePlaceOrder(_selectedDay!, places);
                                   setState(() {
                                     _loadDayItinerary(_selectedDay!);
                                   });
@@ -700,7 +697,28 @@ class _CalendarState extends State<Calendar> {
             right: 10,
             child: FloatingActionButton(
               heroTag: "btn2",
-              onPressed: () {
+              onPressed: () async {
+                // Firestore에서 현재 캘린더의 도시 정보 가져오기
+                final userId = FirebaseAuth.instance.currentUser?.uid;
+                List<String> cities = [];
+                if (userId != null) {
+                  final doc = await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(userId)
+                      .collection('calendars')
+                      .doc(widget.calendarId)
+                      .get();
+                  cities = List<String>.from(doc.data()?['cities'] ?? []);
+                }
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ListOtherUsersCalendar(
+                      cities: cities,  // cities 인자를 전달
+                    ),
+                  ),
+                );
                 // 두 번째 추가 버튼 기능
                 print("두 번째 추가 버튼 누름");
               },
@@ -724,9 +742,9 @@ class _CalendarState extends State<Calendar> {
                   ),
                 );
               },
-              backgroundColor: Theme.of(context).colorScheme.primary, // 기존 버튼 색상
+              backgroundColor: Theme.of(context).colorScheme.primary,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30), // 둥근 모서리 설정
+                borderRadius: BorderRadius.circular(30),
               ),
               child: const Icon(Icons.add),
             ),

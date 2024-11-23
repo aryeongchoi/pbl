@@ -35,18 +35,18 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
             prediction.structuredFormatting?.mainText ?? 'Unknown Location';
         final placeId = prediction.placeId ?? 'Unknown Place ID';
 
-
         // Google Places API를 사용하여 장소 세부 정보를 가져옵니다.
         final placeDetails = await _fetchPlaceDetails(placeId);
         final types = placeDetails['types'] as List<String>? ?? [];
         final rating = placeDetails['rating'] as double? ?? 0.0;
 
-        final nextOrderValue = await _getNextOrderValue();
+        // Ensure order value is treated as a double if necessary
+        final nextOrderValue = (await _getNextOrderValue()).toDouble();
 
-        GeoPoint geoPoint = GeoPoint(latitude, longitude);
-        LatLng latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
+        // Ensure latitude and longitude are double
+        GeoPoint geoPoint = GeoPoint(latitude.toDouble(), longitude.toDouble());
 
-        final cityName = await getCityName(latLng);
+        final cityName = await getCityName(LatLng(latitude, longitude));
 
         // Firestore에 장소 추가
         await FirebaseFirestore.instance
@@ -55,13 +55,13 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
             .collection('calendars')
             .doc(widget.calendarId)
             .collection('dates')
-            .doc(dayId) // 'day01', 'day02'와 같은 형식으로 사용
+            .doc(dayId)
             .collection('places')
             .add({
           'name': shortDescription,
-          'location': GeoPoint(latitude, longitude),
+          'location': geoPoint, // Using the GeoPoint object
           'timestamp': FieldValue.serverTimestamp(),
-          'order': nextOrderValue,
+          'order': nextOrderValue, // Ensure order is a double
           'placeId': placeId,
           'types': types,
           'rating': rating,
@@ -202,12 +202,13 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
             debounceTime: 800,
             isLatLngRequired: true,
             getPlaceDetailWithLatLng: (Prediction prediction) {
+              print('Received prediction: ${prediction.toJson()}');
+              // lat과 lng가 null인 경우 기본값을 0.0으로 설정
               final latitude = double.tryParse(prediction.lat ?? '') ?? 0.0;
               final longitude = double.tryParse(prediction.lng ?? '') ?? 0.0;
 
               if (latitude == 0.0 && longitude == 0.0) {
-                print(
-                    'Warning: Coordinates are (0.0, 0.0). This may indicate missing or invalid data.');
+                print('Warning: Coordinates are (0.0, 0.0). This may indicate missing or invalid data.');
               }
 
               print('Coordinates: ($latitude, $longitude)');
