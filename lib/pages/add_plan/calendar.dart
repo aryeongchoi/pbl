@@ -8,12 +8,15 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'dart:convert';
 
+
+
 class RouteSegment { //경로 관리용
   final LatLng start;
   final LatLng end;
   final List<LatLng> polylinePoints;
+  final String mode; // 모드 속성 추
 
-  RouteSegment(this.start, this.end, this.polylinePoints);
+  RouteSegment(this.start, this.end, this.polylinePoints, this.mode);
 }
 
 class Calendar extends StatefulWidget {
@@ -36,7 +39,7 @@ class _CalendarState extends State<Calendar> {
   Set<Marker> _markers = {};
   List<LatLng> _polylineCoordinates = [];
   List<LatLng> _defaultLineCoordinates = []; // 기본 직선 경로 저장
-  String _selectedMode = 'transit'; // 기본 교통 수단 설정
+  final String _selectedMode = 'transit'; // 기본 교통 수단 설정
   bool _isEditing = false; //장소 수정용
   List<String> _dateList = [];
   String? _selectedDay; // 현재 선택된 날짜
@@ -85,7 +88,7 @@ class _CalendarState extends State<Calendar> {
 
   // 경로 가져오기
   Future<List<LatLng>> _getRoute(LatLng origin, LatLng destination, String mode, String dayId) async {
-    final apiKey = 'AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4';
+    const apiKey = 'AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4';
     final userId = FirebaseAuth.instance.currentUser?.uid; //유저 확인
     final List<LatLng> routeCoordinates = [];
 
@@ -395,12 +398,12 @@ class _CalendarState extends State<Calendar> {
         actions: [
           IconButton(
             icon: Icon(
-              _isEditingCalendarDetails ? Icons.done : Icons.edit,
+              _isEditing ? Icons.done : Icons.edit,
               color: Colors.black,
             ),
             onPressed: () {
               setState(() {
-                _isEditingCalendarDetails = !_isEditingCalendarDetails;
+                _isEditing = !_isEditing;
               });
             },
           ),
@@ -503,14 +506,14 @@ class _CalendarState extends State<Calendar> {
                 polylines: {
                   // 기본 직선 경로
                   Polyline(
-                    polylineId: PolylineId('default_route'),
+                    polylineId: const PolylineId('default_route'),
                     color: Colors.grey,
                     width: 2,
                     points: _defaultLineCoordinates,
                   ),
                   // API 기반 경로
                   Polyline(
-                    polylineId: PolylineId('api_route'),
+                    polylineId: const PolylineId('api_route'),
                     color: Colors.blue,
                     width: 3,
                     points: _polylineCoordinates,
@@ -593,103 +596,79 @@ class _CalendarState extends State<Calendar> {
                     Expanded(
                       child: ReorderableListView.builder(
                         shrinkWrap: true,
-                        itemCount: places.isNotEmpty ? (places.length * 2 - 1) : 0, // 장소 사이에 버튼 추가로 아이템 수 증가
+                        itemCount: places.length, // 장소 수만큼 아이템 수 설정
                         onReorder: (oldIndex, newIndex) async {
                           if (newIndex > oldIndex) {
                             newIndex -= 1;
                           }
-                          if (oldIndex % 2 == 0 && newIndex % 2 == 0) {
-                            final item = places.removeAt(oldIndex ~/ 2);
-                            places.insert(newIndex ~/ 2, item);
-                            await _updatePlaceOrder(_selectedDay!);
-                            setState(() {
-                              _loadDayItinerary(_selectedDay!);
-                            });
-                          }
+                          final item = places.removeAt(oldIndex);
+                          places.insert(newIndex, item);
+                          await _updatePlaceOrder(_selectedDay!);
+                          setState(() {
+                            _loadDayItinerary(_selectedDay!);
+                          });
                         },
                         itemBuilder: (context, index) {
-                          if (index % 2 == 0) {
-                            // 장소 타일
-                            final placeDoc = places[index ~/ 2];
-                            final place = placeDoc.data() as Map<String, dynamic>;
-                            final geoPoint = place['location'] as GeoPoint;
+                          // 장소 타일
+                          final placeDoc = places[index];
+                          final place = placeDoc.data() as Map<String, dynamic>;
+                          final geoPoint = place['location'] as GeoPoint;
 
-                            return ListTile(
-                              key: ValueKey(placeDoc.id), // 고유한 키 할당
-                              leading: _isEditing
-                                  ? const Icon(Icons.menu)
-                                  : CircleAvatar(
-                                backgroundColor: Colors.grey[200],
-                                child: Text((index ~/ 2 + 1).toString()),
-                              ),
-                              title: Text(place['name']),
-                              onTap: () {
-                                _moveCameraToPlace(LatLng(geoPoint.latitude, geoPoint.longitude));
+                          return ListTile(
+                            key: ValueKey(placeDoc.id), // 고유한 키 할당
+                            leading: _isEditing
+                                ? const Icon(Icons.menu)
+                                : CircleAvatar(
+                              backgroundColor: Colors.grey[200],
+                              child: Text((index + 1).toString()),
+                            ),
+                            title: Text(place['name']),
+                            onTap: () {
+                              _moveCameraToPlace(LatLng(geoPoint.latitude, geoPoint.longitude));
+                            },
+                            trailing: _isEditing
+                                ? IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () async {
+                                bool confirm = await showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text("일정 삭제"),
+                                    content: const Text("정말로 삭제하시겠습니까?"),
+                                    actions: [
+                                      TextButton(
+                                        child: const Text("취소"),
+                                        onPressed: () => Navigator.of(context).pop(false),
+                                      ),
+                                      TextButton(
+                                        child: const Text("삭제"),
+                                        onPressed: () => Navigator.of(context).pop(true),
+                                      ),
+                                    ],
+                                  ),
+                                );
+
+                                if (confirm) {
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(FirebaseAuth.instance.currentUser?.uid)
+                                      .collection('calendars')
+                                      .doc(widget.calendarId)
+                                      .collection('dates')
+                                      .doc(_selectedDay)
+                                      .collection('places')
+                                      .doc(placeDoc.id)
+                                      .delete();
+
+                                  await _updatePlaceOrder(_selectedDay!);
+                                  setState(() {
+                                    _loadDayItinerary(_selectedDay!);
+                                  });
+                                }
                               },
-                              trailing: _isEditing
-                                  ? IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () async {
-                                  bool confirm = await showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text("일정 삭제"),
-                                      content: const Text("정말로 삭제하시겠습니까?"),
-                                      actions: [
-                                        TextButton(
-                                          child: const Text("취소"),
-                                          onPressed: () => Navigator.of(context).pop(false),
-                                        ),
-                                        TextButton(
-                                          child: const Text("삭제"),
-                                          onPressed: () => Navigator.of(context).pop(true),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-
-                                  if (confirm) {
-                                    await FirebaseFirestore.instance
-                                        .collection('users')
-                                        .doc(FirebaseAuth.instance.currentUser?.uid)
-                                        .collection('calendars')
-                                        .doc(widget.calendarId)
-                                        .collection('dates')
-                                        .doc(_selectedDay)
-                                        .collection('places')
-                                        .doc(placeDoc.id)
-                                        .delete();
-
-                                    await _updatePlaceOrder(_selectedDay!);
-                                    setState(() {
-                                      _loadDayItinerary(_selectedDay!);
-                                    });
-                                  }
-                                },
-                              )
-                                  : null,
-                            );
-                          } else {
-                            // 경로 변경 버튼
-                            final prevPlace = places[(index ~/ 2)];
-                            final nextPlace = places[(index ~/ 2) + 1];
-                            final prevGeoPoint = prevPlace['location'] as GeoPoint;
-                            final nextGeoPoint = nextPlace['location'] as GeoPoint;
-
-                            return Center(
-                              key: ValueKey('route_button_$index'), // 고유한 키 할당
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  _updateRoute(
-                                    LatLng(prevGeoPoint.latitude, prevGeoPoint.longitude),
-                                    LatLng(nextGeoPoint.latitude, nextGeoPoint.longitude),
-                                    _selectedMode, _selectedDay!
-                                  );
-                                },
-                                child: Text('경로 변경 (${index ~/ 2 + 1} -> ${(index ~/ 2) + 2})'),
-                              ),
-                            );
-                          }
+                            )
+                                : null,
+                          );
                         },
                       ),
                     ),
@@ -700,27 +679,59 @@ class _CalendarState extends State<Calendar> {
           ),
         ],
       ),
-      floatingActionButton: SizedBox(
-        width: 80,
-        height: 80,
-        child: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AddPlaceScreen(
-                  calendarId: widget.calendarId,
-                  dayId: _selectedDay!,
-                ),
-              ),
-            );
-          },
-          backgroundColor: Theme.of(context).colorScheme.primary, // 버튼 배경색
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30), // 둥근 모서리 설정
+
+      floatingActionButton: Stack(
+        children: [
+          Positioned(
+            bottom: 90,
+            right: 10,
+            child: FloatingActionButton(
+              heroTag: "btn1",
+              onPressed: () {
+                // 첫 번째 추가 버튼 기능
+                print("첫 번째 추가 버튼 누름");
+              },
+              backgroundColor: Colors.red, // 첫 번째 버튼의 색상
+              child: const Icon(Icons.map), // 원하는 아이콘
+            ),
           ),
-          child: const Icon(Icons.add),
-        ),
+          Positioned(
+            bottom: 170,
+            right: 10,
+            child: FloatingActionButton(
+              heroTag: "btn2",
+              onPressed: () {
+                // 두 번째 추가 버튼 기능
+                print("두 번째 추가 버튼 누름");
+              },
+              backgroundColor: Colors.green, // 두 번째 버튼의 색상
+              child: const Icon(Icons.directions), // 원하는 아이콘
+            ),
+          ),
+          Positioned(
+            bottom: 10,
+            right: 10,
+            child: FloatingActionButton(
+              heroTag: "btn3",
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddPlaceScreen(
+                      calendarId: widget.calendarId,
+                      dayId: _selectedDay!,
+                    ),
+                  ),
+                );
+              },
+              backgroundColor: Theme.of(context).colorScheme.primary, // 기존 버튼 색상
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30), // 둥근 모서리 설정
+              ),
+              child: const Icon(Icons.add),
+            ),
+          ),
+        ],
       ),
     );
   }

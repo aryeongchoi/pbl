@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_places_flutter/google_places_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_places_flutter/model/prediction.dart';
@@ -34,12 +35,18 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
             prediction.structuredFormatting?.mainText ?? 'Unknown Location';
         final placeId = prediction.placeId ?? 'Unknown Place ID';
 
+
         // Google Places API를 사용하여 장소 세부 정보를 가져옵니다.
         final placeDetails = await _fetchPlaceDetails(placeId);
         final types = placeDetails['types'] as List<String>? ?? [];
         final rating = placeDetails['rating'] as double? ?? 0.0;
 
         final nextOrderValue = await _getNextOrderValue();
+
+        GeoPoint geoPoint = GeoPoint(latitude, longitude);
+        LatLng latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
+
+        final cityName = await getCityName(latLng);
 
         // Firestore에 장소 추가
         await FirebaseFirestore.instance
@@ -58,13 +65,39 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
           'placeId': placeId,
           'types': types,
           'rating': rating,
+          'city': cityName ?? 'Unknown City',
         });
+
+        await _updateCalendarCities(cityName ?? 'Unknown City');
         print('Place added with coordinates: ($latitude, $longitude)');
       } catch (e) {
         print('Failed to add place to Firestore: $e');
       }
     } else {
       print('User is not logged in.');
+    }
+  }
+
+  Future<void> _updateCalendarCities(String cityName) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      final calendarRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('calendars')
+          .doc(widget.calendarId);
+
+      final calendarDoc = await calendarRef.get();
+
+      if (calendarDoc.exists) {
+        List<String> cities = List.from(calendarDoc.data()?['cities'] ?? []);
+        if (!cities.contains(cityName)) {
+          cities.add(cityName);
+          await calendarRef.set({'cities': cities}, SetOptions(merge: true));
+        }
+      } else {
+        await calendarRef.set({'cities': [cityName]}, SetOptions(merge: true));
+      }
     }
   }
 
@@ -89,6 +122,24 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
     }
     return 1;
   }
+
+  Future<String?> getCityName(LatLng latLng) async { //각 장소의 도시 파악
+    final url = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=${apiKey}');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['results'] != null && data['results'].isNotEmpty) {
+        for (var component in data['results'][0]['address_components']) {
+          if (component['types'].contains('locality')) {
+            return component['long_name'];
+          }
+        }
+      }
+    }
+    return null;
+  }
+
 
   Future<Map<String, dynamic>> _fetchPlaceDetails(String placeId) async {
     final url = Uri.parse(
