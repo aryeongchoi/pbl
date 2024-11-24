@@ -197,16 +197,83 @@ class _ListCalendarState extends State<ListCalendar> {
     }
   }
 
-  void AddCalendar(BuildContext context, String? userId, String? name,
-      String? startdDate, String? endDate) {
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('calendars')
-        .add({
-      'name': name,
-      'start_date': startdDate,
-      'end_date': endDate,
-    });
+  void _showAddCalendarDialog(BuildContext context, String? userId) {
+    final nameController = TextEditingController();
+    DateTime? startDate;
+    DateTime? endDate;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('새 일정 추가'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: '일정 이름'),
+              ),
+              const SizedBox(height: 8.0),
+              ElevatedButton(
+                onPressed: () async {
+                  startDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                },
+                child: Text(startDate == null
+                    ? '시작 날짜 선택'
+                    : '시작 날짜: ${startDate.toString().split(' ')[0]}'),
+              ),
+              const SizedBox(height: 8.0),
+              ElevatedButton(
+                onPressed: () async {
+                  endDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                },
+                child: Text(endDate == null
+                    ? '종료 날짜 선택'
+                    : '종료 날짜: ${endDate.toString().split(' ')[0]}'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('추가'),
+              onPressed: () async {
+                if (userId != null &&
+                    nameController.text.isNotEmpty &&
+                    startDate != null &&
+                    endDate != null) {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(userId)
+                      .collection('calendars')
+                      .add({
+                    'name': nameController.text,
+                    'start_date': startDate,
+                    'end_date': endDate,
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
