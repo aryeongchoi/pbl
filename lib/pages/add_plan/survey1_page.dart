@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:truple_practice/pages/add_plan/survey2_page.dart';
 import 'package:truple_practice/widgets/appbar.dart';
 
-class FirstSurveyPage extends StatefulWidget {
-  const FirstSurveyPage({super.key});
+class Survey1Page extends StatefulWidget {
+  const Survey1Page({super.key});
 
   @override
-  State<FirstSurveyPage> createState() => _FirstSurveyPageState();
+  State<Survey1Page> createState() => _FirstSurveyPageState();
 }
 
-class _FirstSurveyPageState extends State<FirstSurveyPage> {
+class _FirstSurveyPageState extends State<Survey1Page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,7 +36,7 @@ class _FirstSurveyPageState extends State<FirstSurveyPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: const Text(
                   "<",
@@ -52,14 +52,14 @@ class _FirstSurveyPageState extends State<FirstSurveyPage> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) =>
-                      const SecondSurveyPage(), // SecondSurveyPage는 위젯이어야 함
+                          const Survey2Page(), // SecondSurveyPage는 위젯이어야 함
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: const Text(
                   ">",

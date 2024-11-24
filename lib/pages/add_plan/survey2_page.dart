@@ -5,14 +5,14 @@ import 'package:truple_practice/widgets/appbar.dart';
 import 'package:truple_practice/pages/add_plan/survey1_page.dart'; // 이전 페이지 import
 import 'package:truple_practice/pages/add_plan/survey3_page.dart'; // Survey3Page import
 
-class SecondSurveyPage extends StatefulWidget {
-  const SecondSurveyPage({super.key});
+class Survey2Page extends StatefulWidget {
+  const Survey2Page({super.key});
 
   @override
-  State<SecondSurveyPage> createState() => _Survey1PageState();
+  State<Survey2Page> createState() => _Survey1PageState();
 }
 
-class _Survey1PageState extends State<SecondSurveyPage> {
+class _Survey1PageState extends State<Survey2Page> {
   final userId = FirebaseAuth.instance.currentUser?.uid;
 
   String selectedBudget = '100만원';
@@ -57,21 +57,21 @@ class _Survey1PageState extends State<SecondSurveyPage> {
                     '1. 여행 비용',
                     budgetOptions,
                     selectedBudget,
-                        (value) => setState(() => selectedBudget = value),
+                    (value) => setState(() => selectedBudget = value),
                   ),
                   const SizedBox(height: 50), // 질문 요소 간 간격을 40으로 늘림
                   _buildQuestion(
                     '2. 여행 인원',
                     peopleOptions,
                     selectedPeople,
-                        (value) => setState(() => selectedPeople = value),
+                    (value) => setState(() => selectedPeople = value),
                   ),
                   const SizedBox(height: 50), // 질문 요소 간 간격을 40으로 늘림
                   _buildQuestion(
                     '3. 여행 목적',
                     purposeOptions,
                     selectedPurpose,
-                        (value) => setState(() => selectedPurpose = value),
+                    (value) => setState(() => selectedPurpose = value),
                   ),
                 ],
               ),
@@ -86,13 +86,14 @@ class _Survey1PageState extends State<SecondSurveyPage> {
                   Navigator.pop(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const FirstSurveyPage(), // 이전 페이지로 이동
+                      builder: (context) => const Survey1Page(), // 이전 페이지로 이동
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: const Text(
                   "<",
@@ -108,13 +109,15 @@ class _Survey1PageState extends State<SecondSurveyPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const Survey3Page(), // Survey3Page로 이동
+                      builder: (context) =>
+                          const Survey3Page(), // Survey3Page로 이동
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: const Text(
                   ">",
@@ -156,11 +159,11 @@ class _Survey1PageState extends State<SecondSurveyPage> {
   }
 
   Widget _buildQuestion(
-      String title,
-      List<String> options,
-      String selectedOption,
-      Function(String) onSelected,
-      ) {
+    String title,
+    List<String> options,
+    String selectedOption,
+    Function(String) onSelected,
+  ) {
     return Container(
       padding: const EdgeInsets.all(8.0),
       child: Column(

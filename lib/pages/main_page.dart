@@ -134,7 +134,7 @@ class _HomePageState extends State<MainPage> {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) =>
-                    const FirstSurveyPage(), // SecondSurveyPage는 위젯이어야 함
+                    const Survey1Page(), // SecondSurveyPage는 위젯이어야 함
               ),
             );
           },

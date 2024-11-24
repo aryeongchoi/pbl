@@ -58,14 +58,14 @@ class _Survey3PageState extends State<Survey3Page> {
                   Navigator.pop(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const SecondSurveyPage(), // 이전 페이지로 이동
+                      builder: (context) => const Survey2Page(), // 이전 페이지로 이동
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: const Text(
                   "<",
