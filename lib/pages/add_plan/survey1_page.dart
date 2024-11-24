@@ -24,20 +24,7 @@ class _FirstSurveyPageState extends State<FirstSurveyPage> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 30), // 제목과 캘린더 네모 간 간격
-          Container(
-            height: 300, // 캘린더 공간의 높이
-            margin: const EdgeInsets.symmetric(horizontal: 16.0),
-            decoration: BoxDecoration(
-              color: Colors.grey[300], // 캘린더 대체용 사각형 색상
-              borderRadius: BorderRadius.circular(10), // 모서리를 둥글게
-            ),
-            child: const Center(
-              child: Text(
-                "캘린더 공간",
-                style: TextStyle(color: Colors.black54, fontSize: 16),
-              ),
-            ),
-          ),
+          _buildStyledContainer(context), // 개선된 캘린더 대체용 컨테이너
           const Spacer(), // 버튼을 아래로 밀기
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -49,7 +36,7 @@ class _FirstSurveyPageState extends State<FirstSurveyPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: const Text(
                   "<",
@@ -65,14 +52,14 @@ class _FirstSurveyPageState extends State<FirstSurveyPage> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) =>
-                          const SecondSurveyPage(), // SecondSurveyPage는 위젯이어야 함
+                      const SecondSurveyPage(), // SecondSurveyPage는 위젯이어야 함
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: const Text(
                   ">",
@@ -86,6 +73,32 @@ class _FirstSurveyPageState extends State<FirstSurveyPage> {
           ),
           const SizedBox(height: 40), // 하단 여백
         ],
+      ),
+    );
+  }
+
+  Widget _buildStyledContainer(BuildContext context) {
+    return Container(
+      height: 300, // 캘린더 공간의 높이
+      margin: const EdgeInsets.symmetric(horizontal: 20.0), // 양옆 간격 증가
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20), // 둥근 모서리
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.shadow,
+            offset: const Offset(0, 0),
+            blurRadius: 10,
+            spreadRadius: 1,
+            blurStyle: BlurStyle.normal,
+          ),
+        ],
+        color: Colors.grey[300], // 캘린더 대체용 사각형 색상
+      ),
+      child: const Center(
+        child: Text(
+          "캘린더 공간",
+          style: TextStyle(color: Colors.black54, fontSize: 16),
+        ),
       ),
     );
   }
