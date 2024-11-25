@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:truple_practice/pages/add_plan/survey2_page.dart';
 import 'package:truple_practice/widgets/appbar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Survey1Page extends StatefulWidget {
   const Survey1Page({super.key});
@@ -127,5 +128,18 @@ class _FirstSurveyPageState extends State<Survey1Page> {
         ),
       ],
     );
+  }
+
+  void AddCalendar(BuildContext context, String? userId, String? name,
+      String? startdDate, String? endDate) {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('calendars')
+        .add({
+      'name': name,
+      'start_date': startdDate,
+      'end_date': endDate,
+    });
   }
 }

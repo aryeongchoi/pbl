@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:truple_practice/widgets/appbar.dart';
 import 'package:truple_practice/pages/add_plan/survey1_page.dart'; // 이전 페이지 import
 import 'package:truple_practice/pages/add_plan/survey3_page.dart'; // Survey3Page import

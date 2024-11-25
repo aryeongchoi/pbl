@@ -121,6 +121,7 @@ class _Survey3PageState extends State<Survey3Page> {
     );
   }
 
+<<<<<<< HEAD
   void _showAddTravelPlanDialog(BuildContext context) {
     final nameController = TextEditingController();
     DateTime? startDate;
@@ -208,5 +209,6 @@ class _Survey3PageState extends State<Survey3Page> {
         );
       },
     );
+
   }
 }
