@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class InfoPage extends StatefulWidget {
   const InfoPage({super.key});
@@ -9,6 +11,8 @@ class InfoPage extends StatefulWidget {
 }
 
 class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
+  final userId = FirebaseAuth.instance.currentUser?.uid;
+
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
 
@@ -152,9 +156,8 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
   }
 
   Widget _buildCountrySelection() {
-    final regions = _isSecondRegion
-        ? ["미국", "아프리카", "프랑스"]
-        : ["한국", "일본", "중국"];
+    final regions =
+        _isSecondRegion ? ["미국", "아프리카", "프랑스"] : ["한국", "일본", "중국"];
     return Column(
       children: [
         Padding(
@@ -162,7 +165,7 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ...regions.map((region) => _buildStyledContainer(region)).toList(),
+              ...regions.map((region) => _buildStyledContainer(region)),
               const SizedBox(width: 0.05),
               _buildToggleContainer(),
             ],
@@ -237,11 +240,11 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
           borderRadius: BorderRadius.circular(20),
           color: Theme.of(context).colorScheme.primaryContainer, // 색상 변경
         ),
-        child: Align(
-          alignment: const Alignment(0.0, -0.5), // 위로 올림
+        child: const Align(
+          alignment: Alignment(0.0, -0.5), // 위로 올림
           child: Text(
             "⇄",
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16.0,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -339,7 +342,7 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '$country',
+                    country,
                     style: const TextStyle(
                       fontSize: 25.0,
                       fontWeight: FontWeight.bold,
@@ -460,10 +463,10 @@ class TravelPlanPage extends StatelessWidget {
 class SpeechBubbleClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    final double radius = 16.0; // 둥근 모서리 반경
-    final double tailWidth = 20.0; // 꼬리 너비
-    final double tailHeight = 10.0; // 꼬리 높이
-    final double tailOffset = 8.0; // 꼬리를 위로 올리는 오프셋
+    const double radius = 16.0; // 둥근 모서리 반경
+    const double tailWidth = 20.0; // 꼬리 너비
+    const double tailHeight = 10.0; // 꼬리 높이
+    const double tailOffset = 8.0; // 꼬리를 위로 올리는 오프셋
 
     final Path path = Path();
 
@@ -471,14 +474,15 @@ class SpeechBubbleClipper extends CustomClipper<Path> {
     path.addRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(0, 0, size.width, size.height - tailHeight - tailOffset),
-        Radius.circular(radius),
+        const Radius.circular(radius),
       ),
     );
 
     // 말풍선 꼬리
     path.moveTo(radius, size.height - tailHeight - tailOffset); // 시작점
     path.lineTo(radius - tailWidth / 2, size.height - tailOffset); // 아래로 내려감
-    path.lineTo(radius + tailWidth / 2, size.height - tailHeight - tailOffset); // 오른쪽 위로 올라감
+    path.lineTo(radius + tailWidth / 2,
+        size.height - tailHeight - tailOffset); // 오른쪽 위로 올라감
 
     path.close();
 

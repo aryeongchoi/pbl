@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:truple_practice/widgets/appbar.dart';
-import 'package:truple_practice/pages/add_plan/survey1_page.dart'; // 이전 페이지 import
+import 'package:truple_practice/widgets/appbar.dart'; // 이전 페이지 import
 import 'package:truple_practice/pages/add_plan/survey3_page.dart'; // Survey3Page import
 
 class Survey2Page extends StatefulWidget {
@@ -56,80 +55,59 @@ class _Survey2PageState extends State<Survey2Page> {
                     '1. 여행 비용',
                     budgetOptions,
                     selectedBudget,
-                        (value) => setState(() => selectedBudget = value),
+                    (value) => setState(() => selectedBudget = value),
                   ),
                   const SizedBox(height: 80), // 질문 요소 간 간격
                   _buildQuestion(
                     '2. 여행 인원',
                     peopleOptions,
                     selectedPeople,
-                        (value) => setState(() => selectedPeople = value),
+                    (value) => setState(() => selectedPeople = value),
                   ),
                   const SizedBox(height: 80), // 질문 요소 간 간격
                   _buildQuestion(
                     '3. 여행 목적',
                     purposeOptions,
                     selectedPurpose,
-                        (value) => setState(() => selectedPurpose = value),
+                    (value) => setState(() => selectedPurpose = value),
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 20), // 버튼과 질문 요소 사이 간격
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const Survey1Page(), // 이전 페이지로 이동
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                ),
-                child: const Text(
-                  "<",
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16), // 좌우 버튼 간 간격
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                      const Survey3Page(), // Survey3Page로 이동
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                ),
-                child: const Text(
-                  ">",
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 40), // 하단 여백
+          ), // 버튼과 질문 요소 사이 간격
         ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: Container(
+        width: MediaQuery.of(context).size.width * 0.91,
+        height: 80,
+        margin: const EdgeInsets.only(bottom: 30),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.shadow,
+              offset: const Offset(0, 0),
+              spreadRadius: 4,
+              blurRadius: 4,
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) =>
+                    const Survey3Page(), // SecondSurveyPage는 위젯이어야 함
+              ),
+            );
+          },
+          backgroundColor: Theme.of(context).colorScheme.primary, // 버튼 배경색
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30), // 둥근 모서리 설정
+          ),
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
@@ -158,11 +136,11 @@ class _Survey2PageState extends State<Survey2Page> {
   }
 
   Widget _buildQuestion(
-      String title,
-      List<String> options,
-      String selectedOption,
-      Function(String) onSelected,
-      ) {
+    String title,
+    List<String> options,
+    String selectedOption,
+    Function(String) onSelected,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
