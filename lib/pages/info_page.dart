@@ -1,5 +1,5 @@
-import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class InfoPage extends StatefulWidget {
   const InfoPage({super.key});
@@ -104,34 +104,41 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
             ),
           ),
           Positioned(
-            top: 20, // 버튼을 완전히 위로 올림
-            right: 20,
-            child: _buildFixedButton(),
+            top: 1, // 버튼을 완전히 위로 올림
+            right: 80, // 오른쪽으로 이동
+            child: _buildSpeechBubbleButton(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFixedButton() {
-    return ElevatedButton(
-      onPressed: () {
-        setState(() {
-          _showCalendar = !_showCalendar; // 캘린더와 다른 콘텐츠 전환
-          _selectedCountry = null; // 버튼 클릭 시 선택 초기화
-          _contentAnimationController.reset();
-        });
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 32,
-          vertical: 12,
+  Widget _buildSpeechBubbleButton() {
+    return ClipPath(
+      clipper: SpeechBubbleClipper(),
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _showCalendar = !_showCalendar;
+            _selectedCountry = null; // 선택 초기화
+            _contentAnimationController.reset();
+          });
+        },
+        child: Container(
+          width: 100, // 말풍선의 가로 길이를 줄임
+          height: 50, // 말풍선의 높이
+          color: _showCalendar
+              ? Theme.of(context).colorScheme.primary // 캘린더일 때 파란색
+              : Theme.of(context).colorScheme.primaryContainer, // 나라 정보일 때 분홍색
+          child: Align(
+            alignment: const Alignment(0.0, -0.7), // 텍스트를 약간 위로 이동
+            child: Text(
+              _showCalendar ? '캘린더' : '나라 정보',
+              textAlign: TextAlign.center, // 텍스트 중앙 정렬
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ),
         ),
-      ),
-      child: Text(
-        _showCalendar ? '다른 콘텐츠 보기' : '캘린더로 돌아가기',
-        style: const TextStyle(color: Colors.white, fontSize: 16),
       ),
     );
   }
@@ -156,7 +163,7 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ...regions.map((region) => _buildStyledContainer(region)).toList(),
-              const SizedBox(width: 10),
+              const SizedBox(width: 0.05),
               _buildToggleContainer(),
             ],
           ),
@@ -164,7 +171,10 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
         if (_selectedCountry != null)
           SlideTransition(
             position: _contentSlideAnimation,
-            child: _buildContentContainer(_selectedCountry!),
+            child: Container(
+              margin: const EdgeInsets.only(top: 15), // 간격 추가
+              child: _buildContentContainer(_selectedCountry!),
+            ),
           ),
       ],
     );
@@ -186,8 +196,8 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20), // 둥근 모서리
           color: isSelected
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.6)
-              : Theme.of(context).colorScheme.tertiary, // 선택된 경우 색상 변경
+              ? Theme.of(context).colorScheme.primaryContainer // 선택된 경우 색상 변경
+              : Theme.of(context).colorScheme.tertiary, // 기본 색상
           boxShadow: [
             BoxShadow(
               color: Theme.of(context).colorScheme.shadow, // 그림자 색상
@@ -225,12 +235,13 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
         margin: const EdgeInsets.symmetric(vertical: 3),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.primaryContainer, // 색상 변경
         ),
-        child: const Center(
+        child: Align(
+          alignment: const Alignment(0.0, -0.5), // 위로 올림
           child: Text(
-            ">",
-            style: TextStyle(
+            "⇄",
+            style: const TextStyle(
               fontSize: 16.0,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -241,27 +252,107 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildContentContainer(String content) {
+  Widget _buildContentContainer(String country) {
+    String timeInfo = '';
+    String weatherInfo = '';
+    String currencyInfo = '';
+    String imagePath = 'images/ko.png';
+
+    final now = DateTime.now();
+    switch (country) {
+      case '한국':
+        timeInfo = '현재 시간: ${now.toLocal()}';
+        weatherInfo = '날씨: 맑음, 15°C';
+        currencyInfo = '환율: 1,000 KRW = 0.75 USD';
+        break;
+      case '일본':
+        final japanTime = now.add(const Duration(hours: 0)); // 시차 없음
+        timeInfo = '현재 시간: ${japanTime.toLocal()}';
+        weatherInfo = '날씨: 흐림, 18°C';
+        currencyInfo = '환율: 100 JPY = 0.9 USD';
+        break;
+      case '중국':
+        final chinaTime = now.add(const Duration(hours: -1)); // 시차 계산
+        timeInfo = '현재 시간: ${chinaTime.toLocal()}';
+        weatherInfo = '날씨: 비, 12°C';
+        currencyInfo = '환율: 1 CNY = 0.14 USD';
+        break;
+      case '미국':
+        final usTime = now.subtract(const Duration(hours: 14)); // 시차 계산
+        timeInfo = '시차: 한국보다 14시간 느림 (${usTime.toLocal()})';
+        weatherInfo = '날씨: 맑음, 22°C';
+        currencyInfo = '환율: 1 USD = 1,330 KRW';
+        break;
+      case '아프리카':
+        final africaTime = now.subtract(const Duration(hours: 7)); // 시차 계산
+        timeInfo = '시차: 한국보다 7시간 느림 (${africaTime.toLocal()})';
+        weatherInfo = '날씨: 덥고 건조, 35°C';
+        currencyInfo = '환율: 1 ZAR = 72 KRW';
+        break;
+      case '프랑스':
+        final franceTime = now.subtract(const Duration(hours: 8)); // 시차 계산
+        timeInfo = '시차: 한국보다 8시간 느림 (${franceTime.toLocal()})';
+        weatherInfo = '날씨: 흐림, 10°C';
+        currencyInfo = '환율: 1 EUR = 1,450 KRW';
+        break;
+      default:
+        timeInfo = '정보 없음';
+        weatherInfo = '정보 없음';
+        currencyInfo = '정보 없음';
+        break;
+    }
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20), // 위치 조정
-      height: 300, // 고정된 높이
+      width: 365,
+      height: 250,
+      margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
         borderRadius: BorderRadius.circular(20),
+        color: Theme.of(context).colorScheme.tertiary,
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).colorScheme.shadow,
-            blurRadius: 10,
-            spreadRadius: 1,
             offset: const Offset(0, 0),
+            blurRadius: 10,
+            spreadRadius: 0.5,
           ),
         ],
       ),
-      child: Center(
-        child: Text(
-          "$content 선택됨",
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center, // 수평 정렬
+          crossAxisAlignment: CrossAxisAlignment.center, // 수직 정렬
+          children: [
+            Transform.translate(
+              offset: const Offset(0, -40), // CircleAvatar를 위로 10픽셀 이동
+              child: CircleAvatar(
+                radius: 30,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                backgroundImage: AssetImage(imagePath),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center, // 텍스트를 세로로 중심 배치
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$country',
+                    style: const TextStyle(
+                      fontSize: 25.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(timeInfo, style: const TextStyle(fontSize: 18)),
+                  Text(weatherInfo, style: const TextStyle(fontSize: 18)),
+                  Text(currencyInfo, style: const TextStyle(fontSize: 18)),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -325,10 +416,7 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
           shape: BoxShape.circle,
         ),
         outsideDaysVisible: false,
-        defaultTextStyle: const TextStyle(
-          fontSize: 20,
-          color: Color.fromARGB(255, 0, 0, 0),
-        ),
+        defaultTextStyle: const TextStyle(fontSize: 20, color: Colors.black),
         weekendTextStyle: const TextStyle(fontSize: 20, color: Colors.red),
       ),
       headerStyle: const HeaderStyle(
@@ -366,5 +454,39 @@ class TravelPlanPage extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class SpeechBubbleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final double radius = 16.0; // 둥근 모서리 반경
+    final double tailWidth = 20.0; // 꼬리 너비
+    final double tailHeight = 10.0; // 꼬리 높이
+    final double tailOffset = 8.0; // 꼬리를 위로 올리는 오프셋
+
+    final Path path = Path();
+
+    // 둥근 사각형 몸체
+    path.addRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height - tailHeight - tailOffset),
+        Radius.circular(radius),
+      ),
+    );
+
+    // 말풍선 꼬리
+    path.moveTo(radius, size.height - tailHeight - tailOffset); // 시작점
+    path.lineTo(radius - tailWidth / 2, size.height - tailOffset); // 아래로 내려감
+    path.lineTo(radius + tailWidth / 2, size.height - tailHeight - tailOffset); // 오른쪽 위로 올라감
+
+    path.close();
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
+    return false;
   }
 }

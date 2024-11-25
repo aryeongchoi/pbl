@@ -36,10 +36,10 @@ class _FirstSurveyPageState extends State<Survey1Page> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 5),
                 ),
                 child: const Text(
-                  "<",
+                  "◁",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.white,
@@ -59,10 +59,10 @@ class _FirstSurveyPageState extends State<Survey1Page> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 5),
                 ),
                 child: const Text(
-                  ">",
+                  "▷",
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.white,
@@ -109,7 +109,7 @@ class _FirstSurveyPageState extends State<Survey1Page> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 50,
+          width: 70,
           height: 10,
           decoration: BoxDecoration(
             color: Colors.blue,
@@ -118,7 +118,7 @@ class _FirstSurveyPageState extends State<Survey1Page> {
         ),
         const SizedBox(width: 10),
         Container(
-          width: 50,
+          width: 70,
           height: 10,
           decoration: BoxDecoration(
             color: Colors.grey[300],

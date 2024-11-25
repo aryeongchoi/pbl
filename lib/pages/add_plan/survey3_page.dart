@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:truple_practice/widgets/appbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:truple_practice/pages/add_plan/survey2_page.dart'; // 이전 페이지 import
+import 'package:firebase_auth/firebase_auth.dart';
+import 'list_calendar.dart';
 
 class Survey3Page extends StatefulWidget {
   const Survey3Page({super.key});
@@ -43,7 +44,7 @@ class _Survey3PageState extends State<Survey3Page> {
                   context: context,
                   title: "나만의 여행 계획 짜기",
                   onTap: () {
-                    print("나만의 여행 계획 클릭됨!");
+                    _showAddTravelPlanDialog(context);
                   },
                 ),
               ],
@@ -55,17 +56,12 @@ class _Survey3PageState extends State<Survey3Page> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const Survey2Page(), // 이전 페이지로 이동
-                    ),
-                  );
+                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: const Text(
                   "<",
@@ -125,22 +121,23 @@ class _Survey3PageState extends State<Survey3Page> {
     );
   }
 
-  void _showAddCalendarDialog(BuildContext context, String? userId) {
+  void _showAddTravelPlanDialog(BuildContext context) {
     final nameController = TextEditingController();
     DateTime? startDate;
     DateTime? endDate;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('새 일정 추가'),
+          title: const Text('새 여행 계획'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: '일정 이름'),
+                decoration: const InputDecoration(labelText: '여행 계획 이름'),
               ),
               const SizedBox(height: 8.0),
               ElevatedButton(
@@ -179,14 +176,13 @@ class _Survey3PageState extends State<Survey3Page> {
                 Navigator.of(context).pop();
               },
             ),
-            TextButton(
-              child: const Text('추가'),
+            ElevatedButton(
               onPressed: () async {
                 if (userId != null &&
                     nameController.text.isNotEmpty &&
                     startDate != null &&
                     endDate != null) {
-                  await FirebaseFirestore.instance
+                  final newCalendarRef = await FirebaseFirestore.instance
                       .collection('users')
                       .doc(userId)
                       .collection('calendars')
@@ -195,9 +191,18 @@ class _Survey3PageState extends State<Survey3Page> {
                     'start_date': startDate,
                     'end_date': endDate,
                   });
+
+                  // Firebase에 추가 완료 후 팝업 닫기 및 ListCalendar로 이동
                   Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ListCalendar(),
+                    ),
+                  );
                 }
               },
+              child: const Text('생성'),
             ),
           ],
         );

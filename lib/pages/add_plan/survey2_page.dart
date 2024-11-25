@@ -9,10 +9,10 @@ class Survey2Page extends StatefulWidget {
   const Survey2Page({super.key});
 
   @override
-  State<Survey2Page> createState() => _Survey1PageState();
+  State<Survey2Page> createState() => _Survey2PageState();
 }
 
-class _Survey1PageState extends State<Survey2Page> {
+class _Survey2PageState extends State<Survey2Page> {
   final userId = FirebaseAuth.instance.currentUser?.uid;
 
   String selectedBudget = '100만원';
@@ -57,21 +57,21 @@ class _Survey1PageState extends State<Survey2Page> {
                     '1. 여행 비용',
                     budgetOptions,
                     selectedBudget,
-                    (value) => setState(() => selectedBudget = value),
+                        (value) => setState(() => selectedBudget = value),
                   ),
-                  const SizedBox(height: 50), // 질문 요소 간 간격을 40으로 늘림
+                  const SizedBox(height: 80), // 질문 요소 간 간격
                   _buildQuestion(
                     '2. 여행 인원',
                     peopleOptions,
                     selectedPeople,
-                    (value) => setState(() => selectedPeople = value),
+                        (value) => setState(() => selectedPeople = value),
                   ),
-                  const SizedBox(height: 50), // 질문 요소 간 간격을 40으로 늘림
+                  const SizedBox(height: 80), // 질문 요소 간 간격
                   _buildQuestion(
                     '3. 여행 목적',
                     purposeOptions,
                     selectedPurpose,
-                    (value) => setState(() => selectedPurpose = value),
+                        (value) => setState(() => selectedPurpose = value),
                   ),
                 ],
               ),
@@ -93,7 +93,7 @@ class _Survey1PageState extends State<Survey2Page> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: const Text(
                   "<",
@@ -110,14 +110,14 @@ class _Survey1PageState extends State<Survey2Page> {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          const Survey3Page(), // Survey3Page로 이동
+                      const Survey3Page(), // Survey3Page로 이동
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 child: const Text(
                   ">",
@@ -149,7 +149,7 @@ class _Survey1PageState extends State<Survey2Page> {
   // 단일 네모 생성
   Widget _buildProgressStep({required bool isActive}) {
     return Container(
-      width: 50,
+      width: 70,
       height: 10,
       decoration: BoxDecoration(
         color: isActive ? Colors.blue : Colors.grey[300],
@@ -159,50 +159,65 @@ class _Survey1PageState extends State<Survey2Page> {
   }
 
   Widget _buildQuestion(
-    String title,
-    List<String> options,
-    String selectedOption,
-    Function(String) onSelected,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+      String title,
+      List<String> options,
+      String selectedOption,
+      Function(String) onSelected,
+      ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 질문 제목
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: options.map((option) {
-                final isSelected = selectedOption == option;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: ChoiceChip(
-                    label: Text(option),
-                    selected: isSelected,
-                    onSelected: (_) => onSelected(option),
-                    selectedColor: Theme.of(context).colorScheme.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
-                    ),
-                    backgroundColor: Colors.white,
+        ),
+        const SizedBox(height: 15), // 제목과 옵션 사이 간격
+        // 옵션 버튼들
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: options.map((option) {
+              final isSelected = selectedOption == option;
+              return GestureDetector(
+                onTap: () => onSelected(option), // 선택 이벤트 연결
+                child: Container(
+                  margin: const EdgeInsets.only(right: 10), // 옵션 간 간격
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 7,
+                  ), // 버튼 내부 여백
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20), // 둥근 모서리
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.white, // 선택된 경우 강조 색상
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02), // 그림자 추가
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                );
-              }).toList(),
-            ),
+                  child: Text(
+                    option,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
