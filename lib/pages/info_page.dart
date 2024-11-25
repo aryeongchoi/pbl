@@ -156,8 +156,7 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
   }
 
   Widget _buildCountrySelection() {
-    final regions =
-        _isSecondRegion ? ["미국", "아프리카", "프랑스"] : ["한국", "일본", "중국"];
+    final regions = _isSecondRegion ? ["미국", "영국", "프랑스"] : ["한국", "일본", "중국"];
     return Column(
       children: [
         Padding(
@@ -259,56 +258,58 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
     String timeInfo = '';
     String weatherInfo = '';
     String currencyInfo = '';
-    String imagePath = 'images/ko.png';
+    String imagePath = ''; // 이미지 경로 초기화
 
     final now = DateTime.now();
     switch (country) {
       case '한국':
-        timeInfo = '현재 시간: ${now.toLocal()}';
-        weatherInfo = '날씨: 맑음, 15°C';
-        currencyInfo = '환율: 1,000 KRW = 0.75 USD';
+        timeInfo = '${now.toLocal()}';
+        weatherInfo = '맑음, 15°C';
+        currencyInfo = '1,000 KRW = 0.75 USD';
+        imagePath = 'images/ko.png'; // 한국 이미지
         break;
       case '일본':
-        final japanTime = now.add(const Duration(hours: 0)); // 시차 없음
-        timeInfo = '현재 시간: ${japanTime.toLocal()}';
-        weatherInfo = '날씨: 흐림, 18°C';
-        currencyInfo = '환율: 100 JPY = 0.9 USD';
+        timeInfo = '${now.toLocal()}';
+        weatherInfo = '흐림, 18°C';
+        currencyInfo = '100 JPY = 0.9 USD';
+        imagePath = 'images/ja.jpg'; // 일본 이미지
         break;
       case '중국':
-        final chinaTime = now.add(const Duration(hours: -1)); // 시차 계산
-        timeInfo = '현재 시간: ${chinaTime.toLocal()}';
-        weatherInfo = '날씨: 비, 12°C';
-        currencyInfo = '환율: 1 CNY = 0.14 USD';
+        timeInfo = '${now.toLocal()}';
+        weatherInfo = '비, 12°C';
+        currencyInfo = '1 CNY = 0.14 USD';
+        imagePath = 'images/ch.jpg'; // 중국 이미지
         break;
       case '미국':
-        final usTime = now.subtract(const Duration(hours: 14)); // 시차 계산
-        timeInfo = '시차: 한국보다 14시간 느림 (${usTime.toLocal()})';
-        weatherInfo = '날씨: 맑음, 22°C';
-        currencyInfo = '환율: 1 USD = 1,330 KRW';
+        timeInfo = '${now.toLocal()}';
+        weatherInfo = '맑음, 22°C';
+        currencyInfo = '1 USD = 1,330 KRW';
+        imagePath = 'images/ny.jpg'; // 미국 이미지
         break;
-      case '아프리카':
-        final africaTime = now.subtract(const Duration(hours: 7)); // 시차 계산
-        timeInfo = '시차: 한국보다 7시간 느림 (${africaTime.toLocal()})';
-        weatherInfo = '날씨: 덥고 건조, 35°C';
-        currencyInfo = '환율: 1 ZAR = 72 KRW';
+      case '영국':
+        timeInfo = '${now.toLocal()}';
+        weatherInfo = '구름 많음, 12°C';
+        currencyInfo = '1 GBP = 1,600 KRW';
+        imagePath = 'images/young.jpg'; // 영국 이미지
         break;
       case '프랑스':
-        final franceTime = now.subtract(const Duration(hours: 8)); // 시차 계산
-        timeInfo = '시차: 한국보다 8시간 느림 (${franceTime.toLocal()})';
-        weatherInfo = '날씨: 흐림, 10°C';
-        currencyInfo = '환율: 1 EUR = 1,450 KRW';
+        timeInfo = '${now.toLocal()}';
+        weatherInfo = '흐림, 10°C';
+        currencyInfo = '1 EUR = 1,450 KRW';
+        imagePath = 'images/p.jpg'; // 프랑스 이미지
         break;
       default:
         timeInfo = '정보 없음';
         weatherInfo = '정보 없음';
         currencyInfo = '정보 없음';
+        imagePath = 'images/default.png'; // 기본 이미지
         break;
     }
 
     return Container(
       width: 365,
-      height: 250,
-      margin: const EdgeInsets.symmetric(vertical: 5),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         color: Theme.of(context).colorScheme.tertiary,
@@ -321,42 +322,56 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center, // 수평 정렬
-          crossAxisAlignment: CrossAxisAlignment.center, // 수직 정렬
-          children: [
-            Transform.translate(
-              offset: const Offset(0, -40), // CircleAvatar를 위로 10픽셀 이동
-              child: CircleAvatar(
-                radius: 30,
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                backgroundImage: AssetImage(imagePath),
-              ),
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12), // 둥근 네모 모양
+            child: Image.asset(
+              imagePath,
+              width: 120, // 이미지 너비를 늘림
+              height: 80, // 이미지 높이
+              fit: BoxFit.cover, // 이미지 비율 유지
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center, // 텍스트를 세로로 중심 배치
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    country,
-                    style: const TextStyle(
-                      fontSize: 25.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(timeInfo, style: const TextStyle(fontSize: 18)),
-                  Text(weatherInfo, style: const TextStyle(fontSize: 18)),
-                  Text(currencyInfo, style: const TextStyle(fontSize: 18)),
-                ],
-              ),
+          ),
+          const SizedBox(height: 16),
+          _buildInfoRow('현재 시간', timeInfo, context),
+          _buildInfoRow('날씨', weatherInfo, context),
+          _buildInfoRow('환율', currencyInfo, context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String title, String value, BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.all(10),
+      width: double.infinity, // 컨테이너 가로 길이를 부모에 맞춤
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white, // 컨테이너 배경 색상 흰색
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, // 왼쪽 정렬
+        mainAxisSize: MainAxisSize.min, // 높이를 내용물에 맞춤
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black, // 글씨 색상 primaryContainer
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 4), // 제목과 값 간의 간격
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.black, // 글씨 색상 primaryContainer
+            ),
+          ),
+        ],
       ),
     );
   }
