@@ -8,7 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'dart:convert';
 
-class RouteSegment { //경로 관리용
+class RouteSegment {
+  //경로 관리용
   final LatLng start;
   final LatLng end;
   final List<LatLng> polylinePoints;
@@ -36,8 +37,8 @@ class _CalendarState extends State<Calendar> {
   Set<Marker> _markers = {};
   List<LatLng> _polylineCoordinates = [];
   List<LatLng> _defaultLineCoordinates = []; // 기본 직선 경로 저장
-  String _selectedMode = 'transit'; // 기본 교통 수단 설정
-  bool _isEditing = false; //장소 수정용
+  final String _selectedMode = 'transit'; // 기본 교통 수단 설정
+  final bool _isEditing = false; //장소 수정용
   List<String> _dateList = [];
   String? _selectedDay; // 현재 선택된 날짜
   String? _calendarName;
@@ -45,8 +46,6 @@ class _CalendarState extends State<Calendar> {
   DateTime? _endDate;
   bool _isEditingCalendarDetails = false; //여행 일정 이름, 기간 수정용
   PolylinePoints polylinePoints = PolylinePoints(); // 경로용
-
-
 
   @override
   void initState() {
@@ -84,8 +83,9 @@ class _CalendarState extends State<Calendar> {
   }
 
   // 경로 가져오기
-  Future<List<LatLng>> _getRoute(LatLng origin, LatLng destination, String mode, String dayId) async {
-    final apiKey = 'AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4';
+  Future<List<LatLng>> _getRoute(
+      LatLng origin, LatLng destination, String mode, String dayId) async {
+    const apiKey = 'AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4';
     final userId = FirebaseAuth.instance.currentUser?.uid; //유저 확인
     final List<LatLng> routeCoordinates = [];
 
@@ -97,7 +97,8 @@ class _CalendarState extends State<Calendar> {
         .collection('dates')
         .doc(dayId) // 여기서 dayId가 실제로 날짜를 식별하도록 설정합니다.
         .collection('routes')
-        .doc('${origin.latitude}_${origin.longitude}_${destination.latitude}_${destination.longitude}'); //경로 식별자
+        .doc(
+            '${origin.latitude}_${origin.longitude}_${destination.latitude}_${destination.longitude}'); //경로 식별자
 
     //print('Firestore path: users/$userId/calendars/${widget.calendarId}/dates/$dayId/routes/${origin.latitude}_${origin.longitude}_${destination.latitude}_${destination.longitude}');
 
@@ -115,7 +116,7 @@ class _CalendarState extends State<Calendar> {
     //없으면 api 호출
     final url = Uri.parse(
       'https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},'
-          '${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=$mode&key=$apiKey',
+      '${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=$mode&key=$apiKey',
     );
 
     try {
@@ -126,7 +127,8 @@ class _CalendarState extends State<Calendar> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['routes'] != null && data['routes'].isNotEmpty) {
-          final polylinePoints = data['routes'][0]['overview_polyline']['points'];
+          final polylinePoints =
+              data['routes'][0]['overview_polyline']['points'];
           routeCoordinates.addAll(_decodePolyline(polylinePoints));
 
           // Firestore에 경로 데이터 저장
@@ -162,41 +164,42 @@ class _CalendarState extends State<Calendar> {
   }
 
   // 경로 업데이트 함수
-  void _updateRoute(LatLng origin, LatLng destination, String mode, String dayId) async {
-    List<LatLng> newApiRouteCoordinates = await _getRoute(origin, destination, mode, dayId);
+  void _updateRoute(
+      LatLng origin, LatLng destination, String mode, String dayId) async {
+    List<LatLng> newApiRouteCoordinates =
+        await _getRoute(origin, destination, mode, dayId);
 
     setState(() {
       // 기존의 _polylineCoordinates에서 현재 구간(origin, destination)에 해당하는 부분을 제거
       _polylineCoordinates.removeWhere((coord) =>
-      (coord.latitude == origin.latitude && coord.longitude == origin.longitude) ||
-          (coord.latitude == destination.latitude && coord.longitude == destination.longitude)
-      );
+          (coord.latitude == origin.latitude &&
+              coord.longitude == origin.longitude) ||
+          (coord.latitude == destination.latitude &&
+              coord.longitude == destination.longitude));
 
       // 새로운 경로가 있으면 추가, 없으면 기본 경로 유지
       if (newApiRouteCoordinates.isNotEmpty) {
         _polylineCoordinates.addAll(newApiRouteCoordinates);
       } else {
         // 새로운 경로가 없는 경우 기본 직선 경로 유지
-        _polylineCoordinates.addAll(_defaultLineCoordinates.where((coord) =>
-        coord == origin || coord == destination
-        ));
+        _polylineCoordinates.addAll(_defaultLineCoordinates
+            .where((coord) => coord == origin || coord == destination));
       }
     });
   }
 
   List<LatLng> _decodePolyline(String encoded) {
     List<PointLatLng> result = polylinePoints.decodePolyline(encoded);
-    return result.map((point) => LatLng(point.latitude, point.longitude)).toList();
+    return result
+        .map((point) => LatLng(point.latitude, point.longitude))
+        .toList();
   }
-
 
   @override
   void dispose() {
     _googleMapController?.dispose();
     super.dispose();
   }
-
-
 
   void _loadDateList() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -225,12 +228,14 @@ class _CalendarState extends State<Calendar> {
     }
   }
 
-  List<String> _generateDayIdList(DateTime startDate, DateTime endDate) { //이게 문제였구연
+  List<String> _generateDayIdList(DateTime startDate, DateTime endDate) {
+    //이게 문제였구연
     List<String> dayIdList = [];
     DateTime currentDate = startDate;
     int dayCounter = 1;
 
-    while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
+    while (currentDate.isBefore(endDate) ||
+        currentDate.isAtSameMomentAs(endDate)) {
       dayIdList.add('day${dayCounter.toString().padLeft(2, '0')}');
       currentDate = currentDate.add(const Duration(days: 1));
       dayCounter++;
@@ -503,14 +508,14 @@ class _CalendarState extends State<Calendar> {
                 polylines: {
                   // 기본 직선 경로
                   Polyline(
-                    polylineId: PolylineId('default_route'),
+                    polylineId: const PolylineId('default_route'),
                     color: Colors.grey,
                     width: 2,
                     points: _defaultLineCoordinates,
                   ),
                   // API 기반 경로
                   Polyline(
-                    polylineId: PolylineId('api_route'),
+                    polylineId: const PolylineId('api_route'),
                     color: Colors.blue,
                     width: 3,
                     points: _polylineCoordinates,
@@ -557,9 +562,8 @@ class _CalendarState extends State<Calendar> {
                       "Day ${index + 1}",
                       style: TextStyle(
                         fontSize: 14,
-                        color: _selectedDay == dayId
-                            ? Colors.white
-                            : Colors.black,
+                        color:
+                            _selectedDay == dayId ? Colors.white : Colors.black,
                       ),
                     ),
                   ),
@@ -593,7 +597,9 @@ class _CalendarState extends State<Calendar> {
                     Expanded(
                       child: ReorderableListView.builder(
                         shrinkWrap: true,
-                        itemCount: places.isNotEmpty ? (places.length * 2 - 1) : 0, // 장소 사이에 버튼 추가로 아이템 수 증가
+                        itemCount: places.isNotEmpty
+                            ? (places.length * 2 - 1)
+                            : 0, // 장소 사이에 버튼 추가로 아이템 수 증가
                         onReorder: (oldIndex, newIndex) async {
                           if (newIndex > oldIndex) {
                             newIndex -= 1;
@@ -608,87 +614,71 @@ class _CalendarState extends State<Calendar> {
                           }
                         },
                         itemBuilder: (context, index) {
-
                           final placeDoc = places[index];
                           final place = placeDoc.data() as Map<String, dynamic>;
                           final geoPoint = place['location'] as GeoPoint;
                           // final order = place['order'] as int;
-                            return ListTile(
-                              key: ValueKey(placeDoc.id), // 고유한 키 할당
-                              leading: _isEditing
-                                  ? const Icon(Icons.menu)
-                                  : CircleAvatar(
-                                backgroundColor: Colors.grey[200],
-                                child: Text((index ~/ 2 + 1).toString()),
-                              ),
-                              title: Text(place['name']),
-                              onTap: () {
-                                _moveCameraToPlace(LatLng(geoPoint.latitude, geoPoint.longitude));
-                              },
-                              trailing: _isEditing
-                                  ? IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () async {
-                                  bool confirm = await showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text("일정 삭제"),
-                                      content: const Text("정말로 삭제하시겠습니까?"),
-                                      actions: [
-                                        TextButton(
-                                          child: const Text("취소"),
-                                          onPressed: () => Navigator.of(context).pop(false),
+                          return ListTile(
+                            key: ValueKey(placeDoc.id), // 고유한 키 할당
+                            leading: _isEditing
+                                ? const Icon(Icons.menu)
+                                : CircleAvatar(
+                                    backgroundColor: Colors.grey[200],
+                                    child: Text((index ~/ 2 + 1).toString()),
+                                  ),
+                            title: Text(place['name']),
+                            onTap: () {
+                              _moveCameraToPlace(LatLng(
+                                  geoPoint.latitude, geoPoint.longitude));
+                            },
+                            trailing: _isEditing
+                                ? IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () async {
+                                      bool confirm = await showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text("일정 삭제"),
+                                          content: const Text("정말로 삭제하시겠습니까?"),
+                                          actions: [
+                                            TextButton(
+                                              child: const Text("취소"),
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(false),
+                                            ),
+                                            TextButton(
+                                              child: const Text("삭제"),
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(true),
+                                            ),
+                                          ],
                                         ),
-                                        TextButton(
-                                          child: const Text("삭제"),
-                                          onPressed: () => Navigator.of(context).pop(true),
-                                        ),
-                                      ],
-                                    ),
-                                  );
+                                      );
 
-                                  if (confirm) {
-                                    await FirebaseFirestore.instance
-                                        .collection('users')
-                                        .doc(FirebaseAuth.instance.currentUser?.uid)
-                                        .collection('calendars')
-                                        .doc(widget.calendarId)
-                                        .collection('dates')
-                                        .doc(_selectedDay)
-                                        .collection('places')
-                                        .doc(placeDoc.id)
-                                        .delete();
+                                      if (confirm) {
+                                        await FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(FirebaseAuth
+                                                .instance.currentUser?.uid)
+                                            .collection('calendars')
+                                            .doc(widget.calendarId)
+                                            .collection('dates')
+                                            .doc(_selectedDay)
+                                            .collection('places')
+                                            .doc(placeDoc.id)
+                                            .delete();
 
-                                    await _updatePlaceOrder(_selectedDay!);
-                                    setState(() {
-                                      _loadDayItinerary(_selectedDay!);
-                                    });
-                                  }
-                                },
-                              )
-                                  : null,
-                            );
-                          } else {
-                            // 경로 변경 버튼
-                            final prevPlace = places[(index ~/ 2)];
-                            final nextPlace = places[(index ~/ 2) + 1];
-                            final prevGeoPoint = prevPlace['location'] as GeoPoint;
-                            final nextGeoPoint = nextPlace['location'] as GeoPoint;
-
-                            return Center(
-                              key: ValueKey('route_button_$index'), // 고유한 키 할당
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  _updateRoute(
-                                    LatLng(prevGeoPoint.latitude, prevGeoPoint.longitude),
-                                    LatLng(nextGeoPoint.latitude, nextGeoPoint.longitude),
-                                    _selectedMode, _selectedDay!
-                                  );
-                                },
-                                child: Text('경로 변경 (${index ~/ 2 + 1} -> ${(index ~/ 2) + 2})'),
-                              ),
-                            );
-                          }
+                                        await _updatePlaceOrder(_selectedDay!);
+                                        setState(() {
+                                          _loadDayItinerary(_selectedDay!);
+                                        });
+                                      }
+                                    },
+                                  )
+                                : null,
+                          );
                         },
                       ),
                     ),
