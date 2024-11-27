@@ -20,23 +20,17 @@ class _SignInState extends State<SignIn> {
   userLogin() async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: 'admin@admin.com',
+        password: 'admin123',
+        //email: email,
+        //password: password,
       );
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const MainPage()),
       );
     } on FirebaseAuthException catch (e) {
-      String message = e.code == 'user-not-found'
-          ? "해당 이메일로 등록된 사용자를 찾을 수 없습니다."
-          : "잘못된 비밀번호입니다.";
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.orangeAccent,
-          content: Text(message, style: const TextStyle(fontSize: 16.0)),
-        ),
-      );
+      print('error $e.message');
     }
   }
 

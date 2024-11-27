@@ -608,12 +608,11 @@ class _CalendarState extends State<Calendar> {
                           }
                         },
                         itemBuilder: (context, index) {
-                          if (index % 2 == 0) {
-                            // 장소 타일
-                            final placeDoc = places[index ~/ 2];
-                            final place = placeDoc.data() as Map<String, dynamic>;
-                            final geoPoint = place['location'] as GeoPoint;
 
+                          final placeDoc = places[index];
+                          final place = placeDoc.data() as Map<String, dynamic>;
+                          final geoPoint = place['location'] as GeoPoint;
+                          // final order = place['order'] as int;
                             return ListTile(
                               key: ValueKey(placeDoc.id), // 고유한 키 할당
                               leading: _isEditing
@@ -764,11 +763,9 @@ class _CalendarState extends State<Calendar> {
                 firstDate: DateTime(2000),
                 lastDate: DateTime(2100),
               );
-              if (pickedDate != null) {
-                setState(() {
-                  _startDate = pickedDate;
-                });
-              }
+              setState(() {
+                _startDate = pickedDate;
+              });
             },
             child: Text(
               _startDate == null
@@ -784,11 +781,9 @@ class _CalendarState extends State<Calendar> {
                 firstDate: DateTime(2000),
                 lastDate: DateTime(2100),
               );
-              if (pickedDate != null) {
-                setState(() {
-                  _endDate = pickedDate;
-                });
-              }
+              setState(() {
+                _endDate = pickedDate;
+              });
             },
             child: Text(
               _endDate == null
