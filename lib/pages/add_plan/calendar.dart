@@ -4,11 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'add_place_screen.dart';
 import 'list_other_users_calendar.dart';
+import 'calendar_scheduling.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_custom_marker/google_maps_custom_marker.dart';
-import 'dart:convert';
 
 
 
@@ -41,7 +40,6 @@ class _CalendarState extends State<Calendar> {
   Set<Marker> _markers = {};
   List<LatLng> _polylineCoordinates = [];
   List<LatLng> _defaultLineCoordinates = []; // 기본 직선 경로 저장
-  final String _selectedMode = 'transit'; // 기본 교통 수단 설정
   bool _isEditing = false; //장소 수정용
   List<String> _dateList = [];
   String? _selectedDay; // 현재 선택된 날짜
@@ -50,6 +48,17 @@ class _CalendarState extends State<Calendar> {
   DateTime? _endDate;
   bool _isEditingCalendarDetails = false; //여행 일정 이름, 기간 수정용
   PolylinePoints polylinePoints = PolylinePoints(); // 경로용
+  List<String> _currentCities = [];
+  bool _showingOtherUsers = false;
+  Set<Polyline> _polylines = {};
+
+
+  final List<Color> markerColors = [
+    Colors.red,
+    Colors.green,
+    Colors.orange,
+    Colors.purple,
+  ];
 
 
 
@@ -58,6 +67,7 @@ class _CalendarState extends State<Calendar> {
     super.initState();
     _loadDateList();
     _loadPlaceCoordinates();
+    _loadCurrentCities();
   }
 
   // Firestore에서 장소 좌표 가져오기
@@ -73,7 +83,7 @@ class _CalendarState extends State<Calendar> {
           .doc(widget.dayId)
           .collection('places')
           .orderBy('order')
-          .get();
+          .get(GetOptions(source: Source.cache)); // 오프라인 캐시 사용
 
       List<LatLng> coordinates = [];
       for (var place in placesSnapshot.docs) {
@@ -88,120 +98,11 @@ class _CalendarState extends State<Calendar> {
     }
   }
 
-  // 경로 가져오기
-  Future<List<LatLng>> _getRoute(LatLng origin, LatLng destination, String mode, String dayId) async {
-    const apiKey = 'AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4';
-    final userId = FirebaseAuth.instance.currentUser?.uid; //유저 확인
-    final List<LatLng> routeCoordinates = [];
-
-    final routeRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('calendars')
-        .doc(widget.calendarId)
-        .collection('dates')
-        .doc(dayId) // 여기서 dayId가 실제로 날짜를 식별하도록 설정합니다.
-        .collection('routes')
-        .doc('${origin.latitude}_${origin.longitude}_${destination.latitude}_${destination.longitude}'); //경로 식별자
-
-    //print('Firestore path: users/$userId/calendars/${widget.calendarId}/dates/$dayId/routes/${origin.latitude}_${origin.longitude}_${destination.latitude}_${destination.longitude}');
-
-    // Firestore에서 경로 데이터 로드
-    //print('Loading route for dayId: $dayId');
-    //print('Firestore path: users/$userId/calendars/${widget.calendarId}/dates/$dayId/routes/${origin.latitude}_${origin.longitude}_${destination.latitude}_${destination.longitude}');
-    final routeSnapshot = await routeRef.get();
-    if (routeSnapshot.exists) {
-      // 저장된 경로가 있는 경우
-      final data = routeSnapshot.data()!;
-      final encodedPolyline = data['polyline'] as String;
-      routeCoordinates.addAll(_decodePolyline(encodedPolyline));
-      return routeCoordinates;
-    }
-    //없으면 api 호출
-    final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},'
-          '${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=$mode&key=$apiKey',
-    );
-
-    try {
-      //print('Origin: ${origin.latitude}, ${origin.longitude}');
-      //print('Destination: ${destination.latitude}, ${destination.longitude}');
-
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['routes'] != null && data['routes'].isNotEmpty) {
-          final polylinePoints = data['routes'][0]['overview_polyline']['points'];
-          routeCoordinates.addAll(_decodePolyline(polylinePoints));
-
-          // Firestore에 경로 데이터 저장
-          try {
-            // Firestore에 경로 데이터 저장
-            await routeRef.set({
-              'polyline': polylinePoints,
-              'timestamp': FieldValue.serverTimestamp(),
-            });
-            print('Route successfully saved to Firestore.');
-          } catch (e) {
-            print('Failed to save route: $e');
-          }
-        } else {
-          print('No routes found');
-          // 경로가 없을 때 직선 경로로 되돌리기
-          setState(() {
-            _polylineCoordinates = _defaultLineCoordinates;
-          });
-        }
-      } else {
-        print('Failed to fetch routes: ${response.statusCode}');
-        // API 호출 실패 시 직선 경로로 되돌리기
-        setState(() {
-          _polylineCoordinates = _defaultLineCoordinates;
-        });
-      }
-    } catch (e) {
-      print('Error fetching routes: $e');
-    }
-
-    return routeCoordinates;
-  }
-
-  // 경로 업데이트 함수
-  void _updateRoute(LatLng origin, LatLng destination, String mode, String dayId) async {
-    List<LatLng> newApiRouteCoordinates = await _getRoute(origin, destination, mode, dayId);
-
-    setState(() {
-      // 기존의 _polylineCoordinates에서 현재 구간(origin, destination)에 해당하는 부분을 제거
-      _polylineCoordinates.removeWhere((coord) =>
-      (coord.latitude == origin.latitude && coord.longitude == origin.longitude) ||
-          (coord.latitude == destination.latitude && coord.longitude == destination.longitude)
-      );
-
-      // 새로운 경로가 있으면 추가, 없으면 기본 경로 유지
-      if (newApiRouteCoordinates.isNotEmpty) {
-        _polylineCoordinates.addAll(newApiRouteCoordinates);
-      } else {
-        // 새로운 경로가 없는 경우 기본 직선 경로 유지
-        _polylineCoordinates.addAll(_defaultLineCoordinates.where((coord) =>
-        coord == origin || coord == destination
-        ));
-      }
-    });
-  }
-
-  List<LatLng> _decodePolyline(String encoded) {
-    List<PointLatLng> result = polylinePoints.decodePolyline(encoded);
-    return result.map((point) => LatLng(point.latitude, point.longitude)).toList();
-  }
-
-
   @override
   void dispose() {
     _googleMapController?.dispose();
     super.dispose();
   }
-
-
 
   void _loadDateList() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -230,7 +131,7 @@ class _CalendarState extends State<Calendar> {
     }
   }
 
-  List<String> _generateDayIdList(DateTime startDate, DateTime endDate) { //이게 문제였구연
+  List<String> _generateDayIdList(DateTime startDate, DateTime endDate) {
     List<String> dayIdList = [];
     DateTime currentDate = startDate;
     int dayCounter = 1;
@@ -257,7 +158,7 @@ class _CalendarState extends State<Calendar> {
           .doc(dayId)
           .collection('places')
           .orderBy('order')
-          .get();
+          .get(GetOptions(source: Source.cache)); // 오프라인 캐시 사용
 
       Set<Marker> markers = {};
       List<LatLng> polylineCoordinates = [];
@@ -275,8 +176,7 @@ class _CalendarState extends State<Calendar> {
             position: latLng,
           ),
           shape: MarkerShape.pin,
-          backgroundColor: GoogleMapsCustomMarkerColor
-              .markerColors[i % GoogleMapsCustomMarkerColor.markerColors.length],
+          backgroundColor: GoogleMapsCustomMarkerColor.markerBlue,
           title: (i + 1).toString(), // 장소 순서에 맞춰 숫자를 표시
           pinOptions: PinMarkerOptions(diameter: 30),
         );
@@ -363,6 +263,136 @@ class _CalendarState extends State<Calendar> {
       }
     }
   }
+
+  void _toggleOtherUsersRoutes() async {
+    if (_showingOtherUsers) {
+      setState(() {
+        _markers.removeWhere((marker) => marker.markerId.value.startsWith('otherUser_'));
+        _polylines.removeWhere((polyline) => polyline.polylineId.value.startsWith('otherUser_'));
+        _showingOtherUsers = false;
+      });
+    } else {
+      try {
+        final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+        final querySnapshots = await FirebaseFirestore.instance
+            .collectionGroup('calendars')
+            .where('cities', arrayContainsAny: _currentCities)
+            .get();
+
+        final otherCalendars = querySnapshots.docs
+            .where((doc) {
+          final pathSegments = doc.reference.path.split('/');
+          final calendarUserId = pathSegments[pathSegments.indexOf('users') + 1];
+          return calendarUserId != currentUserId;
+        })
+            .take(3)
+            .toList();
+
+        final colors = [Colors.red, Colors.green, Colors.blue];
+        for (int i = 0; i < otherCalendars.length; i++) {
+          final calendar = otherCalendars[i];
+          final pathSegments = calendar.reference.path.split('/');
+          final calendarUserId = pathSegments[pathSegments.indexOf('users') + 1];
+          final color = colors[i % colors.length];
+
+          final placesSnapshot = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(calendarUserId)
+              .collection('calendars')
+              .doc(calendar.id)
+              .collection('dates')
+              .doc(_selectedDay)
+              .collection('places')
+              .orderBy('order')
+              .get();
+
+          List<LatLng> otherUserPolylineCoordinates = [];
+          for (int j = 0; j < placesSnapshot.docs.length; j++) {
+            final place = placesSnapshot.docs[j];
+            final geoPoint = place['location'] as GeoPoint;
+            final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
+
+            otherUserPolylineCoordinates.add(latLng);
+
+            // 마커 생성
+            Marker marker = await GoogleMapsCustomMarker.createCustomMarker(
+              marker: Marker(
+                markerId: MarkerId('otherUser_${calendar.id}_${place.id}'),
+                position: latLng,
+              ),
+              shape: MarkerShape.pin,
+              backgroundColor: color,
+              title: (j + 1).toString(),
+              pinOptions: PinMarkerOptions(diameter: 30),
+            );
+
+            setState(() {
+              _markers.add(marker);
+            });
+          }
+
+          if (otherUserPolylineCoordinates.isNotEmpty) {
+            print("Adding polyline with coordinates: $otherUserPolylineCoordinates");
+            setState(() {
+              _polylines.add(Polyline(
+                polylineId: PolylineId('otherUser_route_${calendar.id}'),
+                color: color,
+                width: 5,
+                points: otherUserPolylineCoordinates,
+              ));
+            });
+
+            // Update camera to include the polyline
+            _googleMapController?.animateCamera(
+              CameraUpdate.newLatLngBounds(
+                LatLngBounds(
+                  southwest: LatLng(
+                    otherUserPolylineCoordinates.map((p) => p.latitude).reduce((a, b) => a < b ? a : b),
+                    otherUserPolylineCoordinates.map((p) => p.longitude).reduce((a, b) => a < b ? a : b),
+                  ),
+                  northeast: LatLng(
+                    otherUserPolylineCoordinates.map((p) => p.latitude).reduce((a, b) => a > b ? a : b),
+                    otherUserPolylineCoordinates.map((p) => p.longitude).reduce((a, b) => a > b ? a : b),
+                  ),
+                ),
+                50.0, // Padding
+              ),
+            );
+          }
+        }
+
+        setState(() {
+          _showingOtherUsers = true;
+        });
+      } catch (e) {
+        print("Error showing other users' routes: $e");
+      }
+    }
+  }
+
+  void _loadCurrentCities() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      final calendarDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('calendars')
+          .doc(widget.calendarId)
+          .get();
+
+      if (calendarDoc.exists) {
+        final data = calendarDoc.data();
+        setState(() {
+          _currentCities = List<String>.from(data?['cities'] ?? []);
+        });
+      }
+    }
+  }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -580,7 +610,7 @@ class _CalendarState extends State<Calendar> {
                   .doc(_selectedDay)
                   .collection('places')
                   .orderBy('order')
-                  .get(),
+                  .get(GetOptions(source: Source.cache)),
               builder: (context, placesSnapshot) {
                 if (!placesSnapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
@@ -685,8 +715,15 @@ class _CalendarState extends State<Calendar> {
             child: FloatingActionButton(
               heroTag: "btn1",
               onPressed: () {
-                // 첫 번째 추가 버튼 기능
-                print("첫 번째 추가 버튼 누름");
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CalendarScheduling(
+                      calendarId: widget.calendarId,
+                      dayId: _selectedDay!,
+                    ),
+                  ),
+                );
               },
               backgroundColor: Colors.red, // 첫 번째 버튼의 색상
               child: const Icon(Icons.map), // 원하는 아이콘
@@ -697,33 +734,9 @@ class _CalendarState extends State<Calendar> {
             right: 10,
             child: FloatingActionButton(
               heroTag: "btn2",
-              onPressed: () async {
-                // Firestore에서 현재 캘린더의 도시 정보 가져오기
-                final userId = FirebaseAuth.instance.currentUser?.uid;
-                List<String> cities = [];
-                if (userId != null) {
-                  final doc = await FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(userId)
-                      .collection('calendars')
-                      .doc(widget.calendarId)
-                      .get();
-                  cities = List<String>.from(doc.data()?['cities'] ?? []);
-                }
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ListOtherUsersCalendar(
-                      cities: cities,  // cities 인자를 전달
-                    ),
-                  ),
-                );
-                // 두 번째 추가 버튼 기능
-                print("두 번째 추가 버튼 누름");
-              },
-              backgroundColor: Colors.green, // 두 번째 버튼의 색상
-              child: const Icon(Icons.directions), // 원하는 아이콘
+              onPressed: _toggleOtherUsersRoutes,
+              backgroundColor: Colors.green,
+              child: const Icon(Icons.directions),
             ),
           ),
           Positioned(
@@ -841,3 +854,105 @@ class _CalendarState extends State<Calendar> {
   }
 } */
 }
+
+// 경로 가져오기
+/*Future<List<LatLng>> _getRoute(LatLng origin, LatLng destination, String mode, String dayId) async {
+    const apiKey = 'AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4';
+    final userId = FirebaseAuth.instance.currentUser?.uid; //유저 확인
+    final List<LatLng> routeCoordinates = [];
+
+    final routeRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('calendars')
+        .doc(widget.calendarId)
+        .collection('dates')
+        .doc(dayId) // 여기서 dayId가 실제로 날짜를 식별하도록 설정합니다.
+        .collection('routes')
+        .doc('${origin.latitude}_${origin.longitude}_${destination.latitude}_${destination.longitude}'); //경로 식별자
+
+    //print('Firestore path: users/$userId/calendars/${widget.calendarId}/dates/$dayId/routes/${origin.latitude}_${origin.longitude}_${destination.latitude}_${destination.longitude}');
+
+    // Firestore에서 경로 데이터 로드
+    //print('Loading route for dayId: $dayId');
+    //print('Firestore path: users/$userId/calendars/${widget.calendarId}/dates/$dayId/routes/${origin.latitude}_${origin.longitude}_${destination.latitude}_${destination.longitude}');
+    final routeSnapshot = await routeRef.get();
+    if (routeSnapshot.exists) {
+      // 저장된 경로가 있는 경우
+      final data = routeSnapshot.data()!;
+      final encodedPolyline = data['polyline'] as String;
+      routeCoordinates.addAll(_decodePolyline(encodedPolyline));
+      return routeCoordinates;
+    }
+    //없으면 api 호출
+    final url = Uri.parse(
+      'https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},'
+          '${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=$mode&key=$apiKey',
+    );
+
+    try {
+      //print('Origin: ${origin.latitude}, ${origin.longitude}');
+      //print('Destination: ${destination.latitude}, ${destination.longitude}');
+
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['routes'] != null && data['routes'].isNotEmpty) {
+          final polylinePoints = data['routes'][0]['overview_polyline']['points'];
+          routeCoordinates.addAll(_decodePolyline(polylinePoints));
+
+          // Firestore에 경로 데이터 저장
+          try {
+            // Firestore에 경로 데이터 저장
+            await routeRef.set({
+              'polyline': polylinePoints,
+              'timestamp': FieldValue.serverTimestamp(),
+            });
+            print('Route successfully saved to Firestore.');
+          } catch (e) {
+            print('Failed to save route: $e');
+          }
+        } else {
+          print('No routes found');
+          // 경로가 없을 때 직선 경로로 되돌리기
+          setState(() {
+            _polylineCoordinates = _defaultLineCoordinates;
+          });
+        }
+      } else {
+        print('Failed to fetch routes: ${response.statusCode}');
+        // API 호출 실패 시 직선 경로로 되돌리기
+        setState(() {
+          _polylineCoordinates = _defaultLineCoordinates;
+        });
+      }
+    } catch (e) {
+      print('Error fetching routes: $e');
+    }
+
+    return routeCoordinates;
+  }
+
+  // 경로 업데이트 함수
+  void _updateRoute(LatLng origin, LatLng destination, String mode, String dayId) async {
+    List<LatLng> newApiRouteCoordinates = await _getRoute(origin, destination, mode, dayId);
+
+    setState(() {
+      // 기존의 _polylineCoordinates에서 현재 구간(origin, destination)에 해당하는 부분을 제거
+      _polylineCoordinates.removeWhere((coord) =>
+      (coord.latitude == origin.latitude && coord.longitude == origin.longitude) ||
+          (coord.latitude == destination.latitude && coord.longitude == destination.longitude)
+      );
+
+      // 새로운 경로가 있으면 추가, 없으면 기본 경로 유지
+      if (newApiRouteCoordinates.isNotEmpty) {
+        _polylineCoordinates.addAll(newApiRouteCoordinates);
+      } else {
+        // 새로운 경로가 없는 경우 기본 직선 경로 유지
+        _polylineCoordinates.addAll(_defaultLineCoordinates.where((coord) =>
+        coord == origin || coord == destination
+        ));
+      }
+    });
+  }*/
+
