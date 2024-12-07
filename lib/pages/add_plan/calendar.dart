@@ -211,16 +211,27 @@ class _CalendarState extends State<Calendar> {
     if (userId != null) {
       for (int i = 0; i < places.length; i++) {
         final placeDoc = places[i];
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userId)
-            .collection('calendars')
-            .doc(widget.calendarId)
-            .collection('dates')
-            .doc(dayId)
-            .collection('places')
-            .doc(placeDoc.id)
-            .update({'order': i + 1}); // 0부터 재설정
+        try {
+          final docRef = FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .collection('calendars')
+              .doc(widget.calendarId)
+              .collection('dates')
+              .doc(dayId)
+              .collection('places')
+              .doc(placeDoc.id);
+
+          // 문서가 존재하는지 확인
+          final docSnapshot = await docRef.get();
+          if (docSnapshot.exists) {
+            await docRef.update({'order': i + 1});
+          } else {
+            print('Document not found: ${docRef.path}');
+          }
+        } catch (e) {
+          print('Failed to update place order: $e');
+        }
       }
     }
   }

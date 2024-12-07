@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_places_flutter/google_places_flutter.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_places_flutter/model/prediction.dart';
-import 'package:truple_practice/widgets/appbar.dart';
 import 'calendar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -13,8 +11,7 @@ class AddPlaceScreen extends StatefulWidget {
   final String calendarId;
   final String dayId; // 추가된 dayId
 
-  const AddPlaceScreen(
-      {super.key, required this.calendarId, required this.dayId});
+  const AddPlaceScreen({super.key, required this.calendarId, required this.dayId});
 
   @override
   _AddPlaceScreenState createState() => _AddPlaceScreenState();
@@ -23,16 +20,14 @@ class AddPlaceScreen extends StatefulWidget {
 class _AddPlaceScreenState extends State<AddPlaceScreen> {
   final List<Prediction> _selectedPlaces = [];
   final TextEditingController _searchController = TextEditingController();
-  final String apiKey =
-      "AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4"; // Google API Key
+  final String apiKey = "AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4"; // Google API Key
 
-  Future<void> _addPlaceToFirestore(
-      Prediction prediction, double latitude, double longitude, String dayId) async {
+
+  Future<void> _addPlaceToFirestore(Prediction prediction, double latitude, double longitude) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
       try {
-        final shortDescription =
-            prediction.structuredFormatting?.mainText ?? 'Unknown Location';
+        final shortDescription = prediction.structuredFormatting?.mainText ?? 'Unknown Location';
         final placeId = prediction.placeId ?? 'Unknown Place ID';
 
         // Google Places API를 사용하여 장소 세부 정보를 가져옵니다.
@@ -40,64 +35,33 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
         final types = placeDetails['types'] as List<String>? ?? [];
         final rating = placeDetails['rating'] as double? ?? 0.0;
 
-        // Ensure order value is treated as a double if necessary
-        final nextOrderValue = (await _getNextOrderValue()).toDouble();
+        final nextOrderValue = await _getNextOrderValue();
+        final nextOrderDouble = nextOrderValue.toDouble(); // Ensure double type
 
-        // Ensure latitude and longitude are double
-        GeoPoint geoPoint = GeoPoint(latitude.toDouble(), longitude.toDouble());
-
-        final cityName = await getCityName(LatLng(latitude, longitude));
-
-        // Firestore에 장소 추가
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userId)
             .collection('calendars')
             .doc(widget.calendarId)
             .collection('dates')
-            .doc(dayId)
+            .doc(widget.dayId)
             .collection('places')
             .add({
           'name': shortDescription,
-          'location': geoPoint, // Using the GeoPoint object
+          'location': GeoPoint(latitude, longitude),
           'timestamp': FieldValue.serverTimestamp(),
-          'order': nextOrderValue, // Ensure order is a double
+          'order': nextOrderDouble, // Store as double
           'placeId': placeId,
           'types': types,
           'rating': rating,
-          'city': cityName ?? 'Unknown City',
         });
-
-        await _updateCalendarCities(cityName ?? 'Unknown City');
         print('Place added with coordinates: ($latitude, $longitude)');
       } catch (e) {
         print('Failed to add place to Firestore: $e');
+        print('Prediction details: ${prediction.description}, lat: $latitude, lng: $longitude');
       }
     } else {
       print('User is not logged in.');
-    }
-  }
-
-  Future<void> _updateCalendarCities(String cityName) async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId != null) {
-      final calendarRef = FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('calendars')
-          .doc(widget.calendarId);
-
-      final calendarDoc = await calendarRef.get();
-
-      if (calendarDoc.exists) {
-        List<String> cities = List.from(calendarDoc.data()?['cities'] ?? []);
-        if (!cities.contains(cityName)) {
-          cities.add(cityName);
-          await calendarRef.set({'cities': cities}, SetOptions(merge: true));
-        }
-      } else {
-        await calendarRef.set({'cities': [cityName]}, SetOptions(merge: true));
-      }
     }
   }
 
@@ -110,51 +74,29 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
           .collection('calendars')
           .doc(widget.calendarId)
           .collection('dates')
-          .doc(widget.dayId) // 전달받은 dayId 사용
+          .doc(widget.dayId)
           .collection('places')
           .orderBy('order', descending: true)
           .limit(1)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        return (querySnapshot.docs.first['order'] as int) + 1;
+        return (querySnapshot.docs.first['order'] as num).toInt() + 1;
       }
     }
     return 1;
   }
 
-  Future<String?> getCityName(LatLng latLng) async { //각 장소의 도시 파악
-    final url = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=${apiKey}');
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['results'] != null && data['results'].isNotEmpty) {
-        for (var component in data['results'][0]['address_components']) {
-          if (component['types'].contains('locality')) {
-            return component['long_name'];
-          }
-        }
-      }
-    }
-    return null;
-  }
-
 
   Future<Map<String, dynamic>> _fetchPlaceDetails(String placeId) async {
-    final url = Uri.parse(
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey');
+    final url = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       if (data['status'] == 'OK') {
         final result = data['result'];
-        // 명시적 타입 변환
-        final types = (result['types'] as List<dynamic>?)
-                ?.map((item) => item as String)
-                .toList() ??
-            [];
+        final types = (result['types'] as List<dynamic>?)?.map((item) => item as String).toList() ?? [];
         final rating = result['rating'] as double? ?? 0.0;
         return {
           'types': types,
@@ -166,8 +108,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
   }
 
   Future<String?> fetchPhotoReference(String placeId) async {
-    final url = Uri.parse(
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey');
+    final url = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -189,7 +130,9 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: const CustomAppBar(title: '검색'),
+      appBar: AppBar(
+        title: const Text("장소 추가"),
+      ),
       body: Column(
         children: [
           GooglePlaceAutoCompleteTextField(
@@ -202,8 +145,6 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
             debounceTime: 800,
             isLatLngRequired: true,
             getPlaceDetailWithLatLng: (Prediction prediction) {
-              print('Received prediction: ${prediction.toJson()}');
-              // lat과 lng가 null인 경우 기본값을 0.0으로 설정
               final latitude = double.tryParse(prediction.lat ?? '') ?? 0.0;
               final longitude = double.tryParse(prediction.lng ?? '') ?? 0.0;
 
@@ -234,8 +175,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
                 } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                   return ListView.separated(
                     itemCount: snapshot.data!.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 10),
+                    separatorBuilder: (context, index) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       return snapshot.data![index];
                     },
@@ -246,41 +186,36 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
               },
             ),
           ),
-        ],
-      ),
-      floatingActionButton: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.91,
-        height: 80,
-        child: FloatingActionButton(
-          onPressed: () async {
-            if (_selectedPlaces.isNotEmpty) {
-              for (var place in _selectedPlaces) {
-                final latitude = double.tryParse(place.lat ?? '') ?? 0.0;
-                final longitude = double.tryParse(place.lng ?? '') ?? 0.0;
+          Container(
+            padding: const EdgeInsets.all(8.0),
+            color: Colors.white,
+            child: ElevatedButton(
+              onPressed: () async {
+                if (_selectedPlaces.isNotEmpty) {
+                  for (var place in _selectedPlaces) {
+                    final latitude = double.tryParse(place.lat ?? '') ?? 0.0;
+                    final longitude = double.tryParse(place.lng ?? '') ?? 0.0;
 
-                if (latitude != 0.0 && longitude != 0.0) {
-                  await _addPlaceToFirestore(place, latitude, longitude, widget.dayId);
+                    if (latitude != 0.0 && longitude != 0.0) {
+                      await _addPlaceToFirestore(place, latitude, longitude);
+                    } else {
+                      print('Invalid coordinates for place: ${place.description}');
+                    }
+                  }
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Calendar(calendarId: widget.calendarId, dayId: widget.dayId),
+                    ),
+                  );
                 } else {
-                  print('Invalid coordinates for place: ${place.description}');
+                  print('No place selected to add.');
                 }
-              }
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Calendar(
-                      calendarId: widget.calendarId, dayId: widget.dayId),
-                ),
-              );
-            } else {
-              print('No place selected to add.');
-            }
-          },
-          backgroundColor: Theme.of(context).colorScheme.primary, // 버튼 배경색
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30), // 둥근 모서리 설정
-          ),
-          child: const Text("장소 추가"),
-        ),
+              },
+              child: const Text('선택 완료'),
+            ),
+          )
+        ],
       ),
     );
   }
