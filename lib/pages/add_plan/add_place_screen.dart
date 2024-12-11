@@ -27,20 +27,28 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
 
   Future<void> _addPlaceToFirestore(Prediction prediction, double latitude, double longitude) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
+    String shortDescription = 'Unknown Location';
+    double nextOrderDouble = 0.0;
+    double rating = 0.0;
+
     if (userId != null) {
       try {
-        final shortDescription = prediction.structuredFormatting?.mainText ?? 'Unknown Location';
+        shortDescription = prediction.structuredFormatting?.mainText ?? 'Unknown Location';
         final placeId = prediction.placeId ?? 'Unknown Place ID';
 
         // Google Places API를 사용하여 장소 세부 정보를 가져옵니다.
         final placeDetails = await _fetchPlaceDetails(placeId);
         final types = placeDetails['types'] as List<String>? ?? [];
-        final rating = placeDetails['rating'] as double? ?? 0.0;
+        rating = (placeDetails['rating'] as num?)?.toDouble() ?? 0.0; // Ensure double type
 
         GeoPoint geoPoint = GeoPoint(latitude.toDouble(), longitude.toDouble());
         final cityName = await getCityName(LatLng(latitude, longitude));
         final nextOrderValue = await _getNextOrderValue();
-        final nextOrderDouble = nextOrderValue.toDouble(); // Ensure double type
+        nextOrderDouble = nextOrderValue.toDouble(); // Ensure double type
+
+        // 디버깅 로그
+        print('Adding place with details: name: $shortDescription, order: $nextOrderDouble, rating: $rating');
+        print('Order type: ${nextOrderDouble.runtimeType}, Rating type: ${rating.runtimeType}');
 
         await FirebaseFirestore.instance
             .collection('users')
@@ -52,24 +60,28 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
             .collection('places')
             .add({
           'name': shortDescription,
-          'location': GeoPoint(latitude, longitude),
+          'location': geoPoint,
           'timestamp': FieldValue.serverTimestamp(),
           'order': nextOrderDouble, // Store as double
           'placeId': placeId,
           'types': types,
-          'rating': rating,
+          'rating': rating, // Ensure double type
           'city': cityName ?? 'Unknown City',
         });
         await _updateCalendarCities(cityName ?? 'Unknown City');
         print('Place added with coordinates: ($latitude, $longitude)');
       } catch (e) {
         print('Failed to add place to Firestore: $e');
+        // catch 블록에서도 로그 출력
+        print('Error occurred while adding place with details: name: $shortDescription, order: $nextOrderDouble, rating: $rating');
+        print('Order type: ${nextOrderDouble.runtimeType}, Rating type: ${rating.runtimeType}');
         print('Prediction details: ${prediction.description}, lat: $latitude, lng: $longitude');
       }
     } else {
       print('User is not logged in.');
     }
   }
+
 
   Future<void> _updateCalendarCities(String cityName) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -92,7 +104,7 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
     }
   }
 
-  Future<int> _getNextOrderValue() async {
+  Future<double> _getNextOrderValue() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
       final querySnapshot = await FirebaseFirestore.instance
@@ -108,10 +120,12 @@ class _AddPlaceScreenState extends State<AddPlaceScreen> {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        return (querySnapshot.docs.first['order'] as num).toInt() + 1;
+        final lastOrder = querySnapshot.docs.first['order'] ?? 0;
+        print('Last order found: $lastOrder'); // 디버깅을 위한 로그 추가
+        return (lastOrder as num).toDouble() + 1.0;
       }
     }
-    return 1;
+    return 1.0;
   }
 
   Future<String?> getCityName(LatLng latLng) async { //각 장소의 도시 파악

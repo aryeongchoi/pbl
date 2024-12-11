@@ -7,7 +7,8 @@ import 'calendar_scheduling.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_custom_marker/google_maps_custom_marker.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 
 class RouteSegment { //경로 관리용
@@ -50,6 +51,7 @@ class _CalendarState extends State<Calendar> {
   List<String> _currentCities = [];
   bool _showingOtherUsers = false;
   Set<Polyline> _polylines = {};
+  bool _showingRecommendations = false; // 추천 장소 표시
 
 
   final List<Color> markerColors = [
@@ -400,6 +402,111 @@ class _CalendarState extends State<Calendar> {
     }
   }
 
+  Future<void> _searchAndDisplayNearbyPlaces(double minRating, int minReviewCount) async {
+    print('Fetching user saved locations from Firestore'); // 로그 추가
+    List<LatLng> userLocations = [];
+    List<String> userTypes = [];
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (userId != null) {
+      final placesSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('calendars')
+          .doc(widget.calendarId)
+          .collection('dates')
+          .doc(_selectedDay)
+          .collection('places')
+          .get();
+
+      for (var place in placesSnapshot.docs) {
+        final geoPoint = place['location'] as GeoPoint;
+        final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
+        final rating = (place['rating'] as num?)?.toDouble() ?? 0.0;
+        final types = (place['types'] as List<dynamic>?)?.map((e) => e as String).toList() ?? []; // Safe conversion
+
+        userLocations.add(latLng);
+        if (types.isNotEmpty) {
+          userTypes.add(types.first); // Assuming the first type for search
+        }
+        print('User place: ${place['name']}, Rating: $rating, Types: $types');
+      }
+    }
+
+    for (int i = 0; i < userLocations.length; i++) {
+      final location = userLocations[i];
+      final targetType = userTypes.isNotEmpty ? userTypes[i] : null;
+      if (targetType == null) continue;
+
+      print('Searching for nearby places at location: $location with type: $targetType'); // 로그 추가
+      final apiKey = 'AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4';
+      final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.latitude},${location.longitude}&radius=200&type=$targetType&key=$apiKey',
+      );
+
+      try {
+        final response = await http.get(url);
+        print('API Response: ${response.body}'); // 전체 응답을 로그로 출력
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body); // JSON 데이터 파싱
+          if (data['results'] != null && data['results'].isNotEmpty) {
+            print('Found ${data['results'].length} places'); // 로그 추가
+            int count = 0; // 카운터 초기화
+
+            for (var result in data['results']) {
+              if (count >= 3) break; // 3개의 장소만 선택
+
+              final rating = (result['rating'] as num?)?.toDouble() ?? 0.0;
+              final placeName = result['name'] ?? 'Unnamed Place';
+              final lat = result['geometry']['location']['lat'];
+              final lng = result['geometry']['location']['lng'];
+              final placeLatLng = LatLng(lat, lng);
+
+              if (rating >= minRating && !userLocations.contains(placeLatLng)) { // 사용자 장소 제외
+                print('Adding place: $placeName with rating: $rating, location: ($lat, $lng)');
+
+                Marker marker = Marker(
+                  markerId: MarkerId('recommendation_${result['place_id']}'),
+                  position: LatLng(lat, lng),
+                  infoWindow: InfoWindow(title: placeName),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
+                );
+
+                setState(() {
+                  _markers.add(marker);
+                });
+
+                count++; // 카운터 증가
+              }
+            }
+          } else {
+            print('No places found or empty results for location: $location');
+          }
+        } else {
+          print('Failed to fetch nearby places with status code: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error during API call: $e');
+      }
+    }
+  }
+
+  void _toggleNearbyPlaces() async {
+    if (_showingRecommendations) {
+      print('Removing recommendation markers'); // 로그 추가
+      setState(() {
+        _markers.removeWhere((marker) => marker.markerId.value.startsWith('recommendation_'));
+        _showingRecommendations = false;
+      });
+    } else {
+      print('Fetching recommendation markers'); // 로그 추가
+      await _searchAndDisplayNearbyPlaces(3.5, 0); // Rating 3.5 이상, 리뷰 수 조건은 필요 없음
+      setState(() {
+        _showingRecommendations = true;
+      });
+    }
+  }
+
 
 
 
@@ -715,6 +822,16 @@ class _CalendarState extends State<Calendar> {
 
       floatingActionButton: Stack(
         children: [
+          Positioned(
+            bottom: 250,
+            right: 10,
+            child: FloatingActionButton(
+              heroTag: "btn4",
+              onPressed: _toggleNearbyPlaces,
+              backgroundColor: Colors.blue, // 첫 번째 버튼의 색상
+              child: const Icon(Icons.map), // 원하는 아이콘
+            ),
+          ),
           Positioned(
             bottom: 90,
             right: 10,
