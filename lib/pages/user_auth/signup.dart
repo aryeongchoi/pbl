@@ -41,7 +41,9 @@ class _SignUpState extends State<SignUp> {
         // 홈 페이지로 이동
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const MainPage()),
+          MaterialPageRoute(
+            builder: (context) => const MainPage(),
+          ),
         );
       } on FirebaseAuthException catch (e) {
         // Firebase 인증 오류를 처리
@@ -222,12 +224,17 @@ class _SignUpState extends State<SignUp> {
         child: FloatingActionButton(
           heroTag: "signupButton", // 고유 heroTag 지정
           onPressed: () {
-            setState(() {
-              email = mailcontroller.text;
-              name = namecontroller.text;
-              password = passwordcontroller.text;
-            });
-
+            if (namecontroller.text != "" &&
+                mailcontroller.text != "" &&
+                passwordcontroller.text != "") {
+              setState(
+                () {
+                  email = mailcontroller.text;
+                  name = namecontroller.text;
+                  password = passwordcontroller.text;
+                },
+              );
+            }
             registration();
             Navigator.pop(context);
           },
