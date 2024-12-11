@@ -3,7 +3,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'add_place_screen.dart';
-import 'list_other_users_calendar.dart';
 import 'calendar_scheduling.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -471,12 +470,10 @@ class _CalendarState extends State<Calendar> {
                         firstDate: DateTime(2000),
                         lastDate: DateTime(2100),
                       );
-                      if (pickedDate != null) {
-                        setState(() {
-                          _startDate = pickedDate;
-                        });
-                      }
-                    },
+                      setState(() {
+                        _startDate = pickedDate;
+                      });
+                                        },
                     child: Text(
                       _startDate == null
                           ? '시작 날짜 선택'
@@ -491,12 +488,10 @@ class _CalendarState extends State<Calendar> {
                         firstDate: DateTime(2000),
                         lastDate: DateTime(2100),
                       );
-                      if (pickedDate != null) {
-                        setState(() {
-                          _endDate = pickedDate;
-                        });
-                      }
-                    },
+                      setState(() {
+                        _endDate = pickedDate;
+                      });
+                                        },
                     child: Text(
                       _endDate == null
                           ? '종료 날짜 선택'
