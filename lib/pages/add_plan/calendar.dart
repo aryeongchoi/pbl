@@ -356,7 +356,7 @@ class _CalendarState extends State<Calendar> {
             });
 
             // Update camera to include the polyline
-            _googleMapController?.animateCamera(
+           /* _googleMapController?.animateCamera(
               CameraUpdate.newLatLngBounds(
                 LatLngBounds(
                   southwest: LatLng(
@@ -370,7 +370,7 @@ class _CalendarState extends State<Calendar> {
                 ),
                 50.0, // Padding
               ),
-            );
+            ); */
           }
         }
 
@@ -620,7 +620,7 @@ class _CalendarState extends State<Calendar> {
             ),
           // Google Map
           Expanded(
-            flex: 1,
+            flex: 7,
             child: Container(
               margin: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
@@ -712,7 +712,7 @@ class _CalendarState extends State<Calendar> {
           ),
           // 일정 리스트 및 추가 버튼
           Expanded(
-            flex: 1,
+            flex: 3,
             child: FutureBuilder<QuerySnapshot>(
               future: FirebaseFirestore.instance
                   .collection('users')
