@@ -67,24 +67,42 @@ class _Survey1PageState extends State<Survey1Page> {
           _buildProgressIndicator(), // 상단 네모 두 개
           const SizedBox(height: 20), // 캘린더와 진행 표시기 간 여백
           Expanded(
-            child: SfCalendar(
-              view: CalendarView.month,
-              dataSource: AppointmentDataSource(_appointments),
-              monthViewSettings: const MonthViewSettings(
-                appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Theme.of(context).colorScheme.tertiary,
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).colorScheme.shadow,
+                    offset: const Offset(0, 0),
+                    blurRadius: 10,
+                    spreadRadius: 0.5,
+                    blurStyle: BlurStyle.normal,
+                  ),
+                ],
               ),
-              headerHeight: 50, // 캘린더 헤더 높이 조정
-              headerStyle: CalendarHeaderStyle(
-                textAlign: TextAlign.center, // 헤더 텍스트를 중앙 정렬
-                textStyle: TextStyle(
-                  fontSize: 20, // 헤더 글꼴 크기
-                  fontWeight: FontWeight.bold, // 글꼴 두께
-                  color: Theme.of(context).colorScheme.onSurface, // 텍스트 색상
+              child: SfCalendar(
+                view: CalendarView.month,
+                dataSource: AppointmentDataSource(_appointments),
+                monthViewSettings: const MonthViewSettings(
+                  appointmentDisplayMode:
+                      MonthAppointmentDisplayMode.appointment,
                 ),
+                headerHeight: 50, // 캘린더 헤더 높이 조정
+                headerStyle: CalendarHeaderStyle(
+                  textAlign: TextAlign.center, // 헤더 텍스트를 중앙 정렬
+                  textStyle: TextStyle(
+                    fontSize: 20, // 헤더 글꼴 크기
+                    fontWeight: FontWeight.bold, // 글꼴 두께
+                    color: Theme.of(context).colorScheme.onSurface, // 텍스트 색상
+                  ),
+                ),
+                todayHighlightColor: Theme.of(context)
+                    .colorScheme
+                    .primaryContainer, // 오늘 날짜 강조 색상
+                showNavigationArrow: true, // 네비게이션 화살표 추가
               ),
-              todayHighlightColor:
-                  Theme.of(context).colorScheme.primaryContainer, // 오늘 날짜 강조 색상
-              showNavigationArrow: true, // 네비게이션 화살표 추가
             ),
           ),
         ],
