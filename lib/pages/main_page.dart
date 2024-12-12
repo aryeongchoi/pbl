@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:truple_practice/pages/add_plan/survey1_page.dart';
 import 'package:truple_practice/pages/home_page.dart';
+import 'package:truple_practice/pages/user_page.dart';
 import 'package:truple_practice/widgets/appbar.dart';
 import 'info_page.dart';
 import 'mytrip_page.dart';
@@ -19,7 +20,7 @@ class _HomePageState extends State<MainPage> {
     '홈',
     '나의 여행',
     '정보',
-    '에러'
+    '유저'
   ]; // 페이지에 따른 AppBar 제목
 
   void _onItemTapped(int index) {
@@ -39,6 +40,7 @@ class _HomePageState extends State<MainPage> {
     HomePage(onNavigateToMyTravel: () {}),
     const MyTripPage(),
     const InfoPage(),
+    const UserPage()
   ];
 
   @override
