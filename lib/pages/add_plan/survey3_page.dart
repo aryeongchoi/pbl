@@ -56,38 +56,6 @@ class _Survey3PageState extends State<Survey3Page> {
           ],
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Container(
-        width: MediaQuery.of(context).size.width * 0.91,
-        height: 80,
-        margin: const EdgeInsets.only(bottom: 30),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).colorScheme.shadow,
-              offset: const Offset(0, 0),
-              spreadRadius: 4,
-              blurRadius: 4,
-            ),
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) =>
-                    const Survey3Page(), // SecondSurveyPage는 위젯이어야 함
-              ),
-            );
-          },
-          backgroundColor: Theme.of(context).colorScheme.primary, // 버튼 배경색
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30), // 둥근 모서리 설정
-          ),
-          child: const Icon(Icons.add),
-        ),
-      ),
     );
   }
 

@@ -45,6 +45,7 @@ dependencies:
   table_calendar: ^3.0.0
   flutter_polyline_points: ^2.1.0
   google_maps_custom_marker: ^1.0.3
+  syncfusion_flutter_calendar: ^20.3.47
 
   http: any
 dev_dependencies:

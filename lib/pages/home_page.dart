@@ -67,6 +67,9 @@ class _HomePageState extends State<HomePage> {
                               tagColor: Colors.blue,
                             ),
                           ),
+                          SizedBox(
+                            height: 100,
+                          )
                         ],
                       ),
                     ],
