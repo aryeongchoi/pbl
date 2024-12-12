@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'add_plan/calendar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onNavigateToMyTravel;
@@ -12,6 +14,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
     return Scaffold(
       body: Center(
         child: Column(
@@ -21,23 +25,37 @@ class _HomePageState extends State<HomePage> {
               child: Center(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 5), // 양옆 패딩 추가
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5), // 양옆 패딩 추가
                     child: Column(
                       children: [
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            SizedBox(
-                              width: 380,
-                              height: 354,
-                              child: TravelCard(
-                                imagePath: 'images/ca.jpg',
-                                isHot: true,
-                                tag: '추천',
-                                tagColor: Colors.red,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const Calendar(
+                                      calendarId: "ehH94dL2RDmICDSubt3l",
+                                      dayId: "ehH94dL2RDmICDSubt3l",
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const SizedBox(
+                                width: 380,
+                                height: 354,
+                                child: TravelCard(
+                                  imagePath: 'images/ca.jpg',
+                                  isHot: true,
+                                  tag: '추천',
+                                  tagColor: Colors.red,
+                                ),
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 380,
                               height: 171,
                               child: TravelCard(
@@ -47,7 +65,7 @@ class _HomePageState extends State<HomePage> {
                                 tagColor: Colors.blue,
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 380,
                               height: 354,
                               child: TravelCard(
@@ -57,7 +75,7 @@ class _HomePageState extends State<HomePage> {
                                 tagColor: Colors.red,
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 380,
                               height: 171,
                               child: TravelCard(
@@ -67,7 +85,7 @@ class _HomePageState extends State<HomePage> {
                                 tagColor: Colors.blue,
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 100,
                             )
                           ],

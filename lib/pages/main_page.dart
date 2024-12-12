@@ -75,7 +75,7 @@ class _HomePageState extends State<MainPage> {
                   elevation: 4,
                   type: BottomNavigationBarType.fixed,
                   selectedItemColor:
-                  Theme.of(context).colorScheme.primary, // 선택된 아이템 색상
+                      Theme.of(context).colorScheme.primary, // 선택된 아이템 색상
                   unselectedItemColor: Colors.grey, // 선택되지 않은 아이템 색상
                   currentIndex: _selectedIndex,
                   onTap: _onItemTapped,
@@ -124,7 +124,7 @@ class _HomePageState extends State<MainPage> {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) =>
-                const Survey1Page(), // SecondSurveyPage는 위젯이어야 함
+                    const Survey1Page(), // SecondSurveyPage는 위젯이어야 함
               ),
             );
           },

@@ -5,16 +5,20 @@ import 'package:intl/intl.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_custom_marker/google_maps_custom_marker.dart';
 
-
 class OtherUsersCalendarViewer extends StatefulWidget {
   final String calendarId;
   final String dayId;
   final String userId;
 
-  const OtherUsersCalendarViewer({super.key, required this.calendarId, required this.dayId, required this.userId});
+  const OtherUsersCalendarViewer(
+      {super.key,
+      required this.calendarId,
+      required this.dayId,
+      required this.userId});
 
   @override
-  _OtherUsersCalendarViewerState createState() => _OtherUsersCalendarViewerState();
+  _OtherUsersCalendarViewerState createState() =>
+      _OtherUsersCalendarViewerState();
 }
 
 class _OtherUsersCalendarViewerState extends State<OtherUsersCalendarViewer> {
@@ -94,7 +98,8 @@ class _OtherUsersCalendarViewerState extends State<OtherUsersCalendarViewer> {
     DateTime currentDate = startDate;
     int dayCounter = 1;
 
-    while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
+    while (currentDate.isBefore(endDate) ||
+        currentDate.isAtSameMomentAs(endDate)) {
       dayIdList.add('day${dayCounter.toString().padLeft(2, '0')}');
       currentDate = currentDate.add(const Duration(days: 1));
       dayCounter++;
@@ -245,9 +250,8 @@ class _OtherUsersCalendarViewerState extends State<OtherUsersCalendarViewer> {
                       "Day ${index + 1}",
                       style: TextStyle(
                         fontSize: 14,
-                        color: _selectedDay == dayId
-                            ? Colors.white
-                            : Colors.black,
+                        color:
+                            _selectedDay == dayId ? Colors.white : Colors.black,
                       ),
                     ),
                   ),
@@ -289,7 +293,8 @@ class _OtherUsersCalendarViewerState extends State<OtherUsersCalendarViewer> {
                       ),
                       title: Text(place['name']),
                       onTap: () {
-                        _moveCameraToPlace(LatLng(geoPoint.latitude, geoPoint.longitude));
+                        _moveCameraToPlace(
+                            LatLng(geoPoint.latitude, geoPoint.longitude));
                       },
                     );
                   },

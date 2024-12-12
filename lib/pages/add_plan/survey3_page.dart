@@ -3,6 +3,7 @@ import 'package:truple_practice/widgets/appbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'list_calendar.dart';
+import 'calendar.dart';
 
 class Survey3Page extends StatefulWidget {
   const Survey3Page({super.key});
@@ -39,7 +40,15 @@ class _Survey3PageState extends State<Survey3Page> {
                     context: context,
                     title: "일본 오사카",
                     onTap: () {
-                      print("일본 오사카 클릭됨!");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Calendar(
+                            calendarId: "MIRnbZI8EQt64XeGzdXz",
+                            dayId: "MIRnbZI8EQt64XeGzdXz",
+                          ),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 20),
