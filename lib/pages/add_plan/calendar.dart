@@ -10,8 +10,8 @@ import 'package:google_maps_custom_marker/google_maps_custom_marker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
-class RouteSegment { //경로 관리용
+class RouteSegment {
+  //경로 관리용
   final LatLng start;
   final LatLng end;
   final List<LatLng> polylinePoints;
@@ -50,9 +50,8 @@ class _CalendarState extends State<Calendar> {
   PolylinePoints polylinePoints = PolylinePoints(); // 경로용
   List<String> _currentCities = [];
   bool _showingOtherUsers = false;
-  Set<Polyline> _polylines = {};
+  final Set<Polyline> _polylines = {};
   bool _showingRecommendations = false; // 추천 장소 표시
-
 
   final List<Color> markerColors = [
     Colors.red,
@@ -60,8 +59,6 @@ class _CalendarState extends State<Calendar> {
     Colors.orange,
     Colors.purple,
   ];
-
-
 
   @override
   void initState() {
@@ -84,7 +81,7 @@ class _CalendarState extends State<Calendar> {
           .doc(widget.dayId)
           .collection('places')
           .orderBy('order')
-          .get(GetOptions(source: Source.cache)); // 오프라인 캐시 사용
+          .get(const GetOptions(source: Source.cache)); // 오프라인 캐시 사용
 
       List<LatLng> coordinates = [];
       for (var place in placesSnapshot.docs) {
@@ -137,7 +134,8 @@ class _CalendarState extends State<Calendar> {
     DateTime currentDate = startDate;
     int dayCounter = 1;
 
-    while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
+    while (currentDate.isBefore(endDate) ||
+        currentDate.isAtSameMomentAs(endDate)) {
       dayIdList.add('day${dayCounter.toString().padLeft(2, '0')}');
       currentDate = currentDate.add(const Duration(days: 1));
       dayCounter++;
@@ -159,7 +157,7 @@ class _CalendarState extends State<Calendar> {
           .doc(dayId)
           .collection('places')
           .orderBy('order')
-          .get(GetOptions(source: Source.cache)); // 오프라인 캐시 사용
+          .get(const GetOptions(source: Source.cache)); // 오프라인 캐시 사용
 
       Set<Marker> markers = {};
       List<LatLng> polylineCoordinates = [];
@@ -207,7 +205,8 @@ class _CalendarState extends State<Calendar> {
     );
   }
 
-  Future<void> _updatePlaceOrder(String dayId, List<QueryDocumentSnapshot> places) async {
+  Future<void> _updatePlaceOrder(
+      String dayId, List<QueryDocumentSnapshot> places) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
       for (int i = 0; i < places.length; i++) {
@@ -279,8 +278,10 @@ class _CalendarState extends State<Calendar> {
   void _toggleOtherUsersRoutes() async {
     if (_showingOtherUsers) {
       setState(() {
-        _markers.removeWhere((marker) => marker.markerId.value.startsWith('otherUser_'));
-        _polylines.removeWhere((polyline) => polyline.polylineId.value.startsWith('otherUser_'));
+        _markers.removeWhere(
+            (marker) => marker.markerId.value.startsWith('otherUser_'));
+        _polylines.removeWhere(
+            (polyline) => polyline.polylineId.value.startsWith('otherUser_'));
         _showingOtherUsers = false;
       });
     } else {
@@ -294,10 +295,11 @@ class _CalendarState extends State<Calendar> {
 
         final otherCalendars = querySnapshots.docs
             .where((doc) {
-          final pathSegments = doc.reference.path.split('/');
-          final calendarUserId = pathSegments[pathSegments.indexOf('users') + 1];
-          return calendarUserId != currentUserId;
-        })
+              final pathSegments = doc.reference.path.split('/');
+              final calendarUserId =
+                  pathSegments[pathSegments.indexOf('users') + 1];
+              return calendarUserId != currentUserId;
+            })
             .take(3)
             .toList();
 
@@ -305,7 +307,8 @@ class _CalendarState extends State<Calendar> {
         for (int i = 0; i < otherCalendars.length; i++) {
           final calendar = otherCalendars[i];
           final pathSegments = calendar.reference.path.split('/');
-          final calendarUserId = pathSegments[pathSegments.indexOf('users') + 1];
+          final calendarUserId =
+              pathSegments[pathSegments.indexOf('users') + 1];
           final color = colors[i % colors.length];
 
           final placesSnapshot = await FirebaseFirestore.instance
@@ -345,7 +348,8 @@ class _CalendarState extends State<Calendar> {
           }
 
           if (otherUserPolylineCoordinates.isNotEmpty) {
-            print("Adding polyline with coordinates: $otherUserPolylineCoordinates");
+            print(
+                "Adding polyline with coordinates: $otherUserPolylineCoordinates");
             setState(() {
               _polylines.add(Polyline(
                 polylineId: PolylineId('otherUser_route_${calendar.id}'),
@@ -356,7 +360,7 @@ class _CalendarState extends State<Calendar> {
             });
 
             // Update camera to include the polyline
-           /* _googleMapController?.animateCamera(
+            /* _googleMapController?.animateCamera(
               CameraUpdate.newLatLngBounds(
                 LatLngBounds(
                   southwest: LatLng(
@@ -402,7 +406,8 @@ class _CalendarState extends State<Calendar> {
     }
   }
 
-  Future<void> _searchAndDisplayNearbyPlaces(double minRating, int minReviewCount) async {
+  Future<void> _searchAndDisplayNearbyPlaces(
+      double minRating, int minReviewCount) async {
     print('Fetching user saved locations from Firestore'); // 로그 추가
     List<LatLng> userLocations = [];
     List<String> userTypes = [];
@@ -423,7 +428,10 @@ class _CalendarState extends State<Calendar> {
         final geoPoint = place['location'] as GeoPoint;
         final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
         final rating = (place['rating'] as num?)?.toDouble() ?? 0.0;
-        final types = (place['types'] as List<dynamic>?)?.map((e) => e as String).toList() ?? []; // Safe conversion
+        final types = (place['types'] as List<dynamic>?)
+                ?.map((e) => e as String)
+                .toList() ??
+            []; // Safe conversion
 
         userLocations.add(latLng);
         if (types.isNotEmpty) {
@@ -438,8 +446,9 @@ class _CalendarState extends State<Calendar> {
       final targetType = userTypes.isNotEmpty ? userTypes[i] : null;
       if (targetType == null) continue;
 
-      print('Searching for nearby places at location: $location with type: $targetType'); // 로그 추가
-      final apiKey = 'AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4';
+      print(
+          'Searching for nearby places at location: $location with type: $targetType'); // 로그 추가
+      const apiKey = 'AIzaSyAyvveCFRA-uYPE5JqiYIgN_BLVNEtKFb4';
       final url = Uri.parse(
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.latitude},${location.longitude}&radius=200&type=$targetType&key=$apiKey',
       );
@@ -462,14 +471,17 @@ class _CalendarState extends State<Calendar> {
               final lng = result['geometry']['location']['lng'];
               final placeLatLng = LatLng(lat, lng);
 
-              if (rating >= minRating && !userLocations.contains(placeLatLng)) { // 사용자 장소 제외
-                print('Adding place: $placeName with rating: $rating, location: ($lat, $lng)');
+              if (rating >= minRating && !userLocations.contains(placeLatLng)) {
+                // 사용자 장소 제외
+                print(
+                    'Adding place: $placeName with rating: $rating, location: ($lat, $lng)');
 
                 Marker marker = Marker(
                   markerId: MarkerId('recommendation_${result['place_id']}'),
                   position: LatLng(lat, lng),
                   infoWindow: InfoWindow(title: placeName),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueYellow),
                 );
 
                 setState(() {
@@ -483,7 +495,8 @@ class _CalendarState extends State<Calendar> {
             print('No places found or empty results for location: $location');
           }
         } else {
-          print('Failed to fetch nearby places with status code: ${response.statusCode}');
+          print(
+              'Failed to fetch nearby places with status code: ${response.statusCode}');
         }
       } catch (e) {
         print('Error during API call: $e');
@@ -495,21 +508,19 @@ class _CalendarState extends State<Calendar> {
     if (_showingRecommendations) {
       print('Removing recommendation markers'); // 로그 추가
       setState(() {
-        _markers.removeWhere((marker) => marker.markerId.value.startsWith('recommendation_'));
+        _markers.removeWhere(
+            (marker) => marker.markerId.value.startsWith('recommendation_'));
         _showingRecommendations = false;
       });
     } else {
       print('Fetching recommendation markers'); // 로그 추가
-      await _searchAndDisplayNearbyPlaces(3.5, 0); // Rating 3.5 이상, 리뷰 수 조건은 필요 없음
+      await _searchAndDisplayNearbyPlaces(
+          3.5, 0); // Rating 3.5 이상, 리뷰 수 조건은 필요 없음
       setState(() {
         _showingRecommendations = true;
       });
     }
   }
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -580,7 +591,7 @@ class _CalendarState extends State<Calendar> {
                       setState(() {
                         _startDate = pickedDate;
                       });
-                                        },
+                    },
                     child: Text(
                       _startDate == null
                           ? '시작 날짜 선택'
@@ -598,7 +609,7 @@ class _CalendarState extends State<Calendar> {
                       setState(() {
                         _endDate = pickedDate;
                       });
-                                        },
+                    },
                     child: Text(
                       _endDate == null
                           ? '종료 날짜 선택'
@@ -700,9 +711,8 @@ class _CalendarState extends State<Calendar> {
                       "Day ${index + 1}",
                       style: TextStyle(
                         fontSize: 14,
-                        color: _selectedDay == dayId
-                            ? Colors.white
-                            : Colors.black,
+                        color:
+                            _selectedDay == dayId ? Colors.white : Colors.black,
                       ),
                     ),
                   ),
@@ -723,7 +733,7 @@ class _CalendarState extends State<Calendar> {
                   .doc(_selectedDay)
                   .collection('places')
                   .orderBy('order')
-                  .get(GetOptions(source: Source.cache)),
+                  .get(const GetOptions(source: Source.cache)),
               builder: (context, placesSnapshot) {
                 if (!placesSnapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
@@ -759,54 +769,61 @@ class _CalendarState extends State<Calendar> {
                             leading: _isEditing
                                 ? const Icon(Icons.menu)
                                 : CircleAvatar(
-                              backgroundColor: Colors.grey[200],
-                              child: Text((index + 1).toString()),
-                            ),
+                                    backgroundColor: Colors.grey[200],
+                                    child: Text((index + 1).toString()),
+                                  ),
                             title: Text(place['name']),
                             onTap: () {
-                              _moveCameraToPlace(LatLng(geoPoint.latitude, geoPoint.longitude));
+                              _moveCameraToPlace(LatLng(
+                                  geoPoint.latitude, geoPoint.longitude));
                             },
                             trailing: _isEditing
                                 ? IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () async {
-                                bool confirm = await showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text("일정 삭제"),
-                                    content: const Text("정말로 삭제하시겠습니까?"),
-                                    actions: [
-                                      TextButton(
-                                        child: const Text("취소"),
-                                        onPressed: () => Navigator.of(context).pop(false),
-                                      ),
-                                      TextButton(
-                                        child: const Text("삭제"),
-                                        onPressed: () => Navigator.of(context).pop(true),
-                                      ),
-                                    ],
-                                  ),
-                                );
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () async {
+                                      bool confirm = await showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text("일정 삭제"),
+                                          content: const Text("정말로 삭제하시겠습니까?"),
+                                          actions: [
+                                            TextButton(
+                                              child: const Text("취소"),
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(false),
+                                            ),
+                                            TextButton(
+                                              child: const Text("삭제"),
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(true),
+                                            ),
+                                          ],
+                                        ),
+                                      );
 
-                                if (confirm) {
-                                  await FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(FirebaseAuth.instance.currentUser?.uid)
-                                      .collection('calendars')
-                                      .doc(widget.calendarId)
-                                      .collection('dates')
-                                      .doc(_selectedDay)
-                                      .collection('places')
-                                      .doc(placeDoc.id)
-                                      .delete();
+                                      if (confirm) {
+                                        await FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(FirebaseAuth
+                                                .instance.currentUser?.uid)
+                                            .collection('calendars')
+                                            .doc(widget.calendarId)
+                                            .collection('dates')
+                                            .doc(_selectedDay)
+                                            .collection('places')
+                                            .doc(placeDoc.id)
+                                            .delete();
 
-                                  await _updatePlaceOrder(_selectedDay!, places);
-                                  setState(() {
-                                    _loadDayItinerary(_selectedDay!);
-                                  });
-                                }
-                              },
-                            )
+                                        await _updatePlaceOrder(
+                                            _selectedDay!, places);
+                                        setState(() {
+                                          _loadDayItinerary(_selectedDay!);
+                                        });
+                                      }
+                                    },
+                                  )
                                 : null,
                           );
                         },
@@ -819,7 +836,6 @@ class _CalendarState extends State<Calendar> {
           ),
         ],
       ),
-
       floatingActionButton: Stack(
         children: [
           Positioned(

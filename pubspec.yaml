@@ -74,6 +74,12 @@ flutter:
     - images/oh.jpg
     - images/se.jpg
     - images/logo.png
+    - images/ko.png
+    - images/ch.jpg
+    - images/ja.jpg
+    - images/ny.jpg
+    - images/p.jpg
+    - images/young.jpg
     - assets/images/
 
   # To add assets to your application, add an assets section, like this:
