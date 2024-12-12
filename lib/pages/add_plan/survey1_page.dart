@@ -42,7 +42,10 @@ class _Survey1PageState extends State<Survey1Page> {
           startTime: startDate,
           endTime: endDate,
           subject: name,
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.2), // 약간 투명한 색상
+          color: Theme.of(context)
+              .colorScheme
+              .primary
+              .withOpacity(0.2), // 약간 투명한 색상
         ));
       }
 
@@ -79,7 +82,8 @@ class _Survey1PageState extends State<Survey1Page> {
                   color: Theme.of(context).colorScheme.onSurface, // 텍스트 색상
                 ),
               ),
-              todayHighlightColor: Theme.of(context).colorScheme.primaryContainer,// 오늘 날짜 강조 색상
+              todayHighlightColor:
+                  Theme.of(context).colorScheme.primaryContainer, // 오늘 날짜 강조 색상
               showNavigationArrow: true, // 네비게이션 화살표 추가
             ),
           ),

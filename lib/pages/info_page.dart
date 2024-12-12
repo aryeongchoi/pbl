@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class InfoPage extends StatefulWidget {
@@ -12,6 +14,7 @@ class InfoPage extends StatefulWidget {
 
 class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
   final userId = FirebaseAuth.instance.currentUser?.uid;
+  List<Appointment> _appointments = [];
 
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
@@ -36,6 +39,8 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
+    _fetchEventsFromFirestore();
+
     // 애니메이션 초기화
     _contentAnimationController = AnimationController(
       vsync: this,
@@ -54,6 +59,41 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
   void dispose() {
     _contentAnimationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchEventsFromFirestore() async {
+    try {
+      final snapshots = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('calendars')
+          .get();
+
+      final List<Appointment> fetchedAppointments = [];
+
+      for (var doc in snapshots.docs) {
+        final data = doc.data();
+        final startDate = (data['start_date'] as Timestamp).toDate();
+        final endDate = (data['end_date'] as Timestamp).toDate();
+        final name = data['name'] ?? 'No Title';
+
+        fetchedAppointments.add(Appointment(
+          startTime: startDate,
+          endTime: endDate,
+          subject: name,
+          color: Theme.of(context)
+              .colorScheme
+              .primary
+              .withOpacity(0.2), // 약간 투명한 색상
+        ));
+      }
+
+      setState(() {
+        _appointments = fetchedAppointments;
+      });
+    } catch (e) {
+      print('Error fetching events: $e');
+    }
   }
 
   @override
@@ -93,7 +133,29 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: _showCalendar
-                        ? _buildCalendarContainer()
+                        ? SfCalendar(
+                            view: CalendarView.month,
+                            dataSource: AppointmentDataSource(_appointments),
+                            monthViewSettings: const MonthViewSettings(
+                              appointmentDisplayMode:
+                                  MonthAppointmentDisplayMode.appointment,
+                            ),
+                            headerHeight: 50, // 캘린더 헤더 높이 조정
+                            headerStyle: CalendarHeaderStyle(
+                              textAlign: TextAlign.center, // 헤더 텍스트를 중앙 정렬
+                              textStyle: TextStyle(
+                                fontSize: 20, // 헤더 글꼴 크기
+                                fontWeight: FontWeight.bold, // 글꼴 두께
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface, // 텍스트 색상
+                              ),
+                            ),
+                            todayHighlightColor: Theme.of(context)
+                                .colorScheme
+                                .primaryContainer, // 오늘 날짜 강조 색상
+                            showNavigationArrow: true, // 네비게이션 화살표 추가
+                          )
                         : _buildCountrySelection(),
                   ),
                 ),
@@ -507,5 +569,11 @@ class SpeechBubbleClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
     return false;
+  }
+}
+
+class AppointmentDataSource extends CalendarDataSource {
+  AppointmentDataSource(List<Appointment> source) {
+    appointments = source;
   }
 }
