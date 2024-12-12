@@ -36,6 +36,7 @@ class _CalendarState extends State<Calendar> {
     zoom: 15.5,
   );
 
+  bool _isExpanded = false;
   GoogleMapController? _googleMapController;
   Set<Marker> _markers = {};
   List<LatLng> _polylineCoordinates = [];
@@ -526,6 +527,7 @@ class _CalendarState extends State<Calendar> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: GestureDetector(
           onTap: () {
             setState(() {
@@ -533,19 +535,22 @@ class _CalendarState extends State<Calendar> {
             });
           },
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 _calendarName ?? '여행 일정',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.outline),
               ),
               Text(
                 _startDate != null && _endDate != null
                     ? '${DateFormat('yyyy-MM-dd').format(_startDate!)} ~ ${DateFormat('yyyy-MM-dd').format(_endDate!)}'
                     : '',
-                style: const TextStyle(fontSize: 12),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
               ),
             ],
           ),
@@ -837,68 +842,96 @@ class _CalendarState extends State<Calendar> {
         ],
       ),
       floatingActionButton: Stack(
+        alignment: Alignment.bottomRight,
         children: [
-          Positioned(
-            bottom: 250,
+          // 첫 번째 버튼
+          AnimatedPositioned(
+            bottom: _isExpanded ? 190 : 10, // 위치 변경
             right: 10,
-            child: FloatingActionButton(
-              heroTag: "btn4",
-              onPressed: _toggleNearbyPlaces,
-              backgroundColor: Colors.blue, // 첫 번째 버튼의 색상
-              child: const Icon(Icons.map), // 원하는 아이콘
-            ),
-          ),
-          Positioned(
-            bottom: 90,
-            right: 10,
-            child: FloatingActionButton(
-              heroTag: "btn1",
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CalendarScheduling(
-                      calendarId: widget.calendarId,
-                      dayId: _selectedDay!,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: Visibility(
+              visible: _isExpanded, // 확장 상태일 때만 보임
+              child: FloatingActionButton(
+                heroTag: "btn1",
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CalendarScheduling(
+                        calendarId: widget.calendarId,
+                        dayId: _selectedDay!,
+                      ),
                     ),
-                  ),
-                );
-              },
-              backgroundColor: Colors.red, // 첫 번째 버튼의 색상
-              child: const Icon(Icons.map), // 원하는 아이콘
+                  );
+                },
+                backgroundColor: Colors.red,
+                child: const Icon(Icons.map),
+              ),
             ),
           ),
-          Positioned(
-            bottom: 170,
+          // 두 번째 버튼
+          AnimatedPositioned(
+            bottom: _isExpanded ? 130 : 10, // 위치 변경
             right: 10,
-            child: FloatingActionButton(
-              heroTag: "btn2",
-              onPressed: _toggleOtherUsersRoutes,
-              backgroundColor: Colors.green,
-              child: const Icon(Icons.directions),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: Visibility(
+              visible: _isExpanded, // 확장 상태일 때만 보임
+              child: FloatingActionButton(
+                heroTag: "btn2",
+                onPressed: _toggleOtherUsersRoutes,
+                backgroundColor: Colors.green,
+                child: const Icon(Icons.directions),
+              ),
             ),
           ),
+          // 세 번째 버튼
+          AnimatedPositioned(
+            bottom: _isExpanded ? 70 : 10, // 위치 변경
+            right: 10,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: Visibility(
+              visible: _isExpanded, // 확장 상태일 때만 보임
+              child: FloatingActionButton(
+                heroTag: "btn3",
+                onPressed: _toggleNearbyPlaces,
+                backgroundColor: Colors.blue,
+                child: const Icon(Icons.near_me),
+              ),
+            ),
+          ),
+          // + 버튼
           Positioned(
             bottom: 10,
             right: 10,
             child: FloatingActionButton(
-              heroTag: "btn3",
+              heroTag: "btn4",
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AddPlaceScreen(
-                      calendarId: widget.calendarId,
-                      dayId: _selectedDay!,
-                    ),
-                  ),
+                setState(
+                  () {
+                    _isExpanded = !_isExpanded;
+                    if (!_isExpanded) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddPlaceScreen(
+                            calendarId: widget.calendarId,
+                            dayId: _selectedDay!,
+                          ),
+                        ),
+                      );
+                    }
+                  },
                 );
               },
               backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+              child: AnimatedRotation(
+                turns: _isExpanded ? 0.125 : 0, // + 아이콘을 45도 회전
+                duration: const Duration(milliseconds: 300),
+                child: const Icon(Icons.add),
               ),
-              child: const Icon(Icons.add),
             ),
           ),
         ],
