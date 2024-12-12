@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:truple_practice/widgets/appbar.dart'; // 이전 페이지 import
+import 'package:truple_practice/pages/add_plan/survey2_page.dart'; // Survey2Page import
 
 class Survey1Page extends StatefulWidget {
   const Survey1Page({super.key});
@@ -41,7 +42,7 @@ class _Survey1PageState extends State<Survey1Page> {
           startTime: startDate,
           endTime: endDate,
           subject: name,
-          color: Colors.blue.withOpacity(0.2), // 약간 투명한 색상
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.2), // 약간 투명한 색상
         ));
       }
 
@@ -57,12 +58,32 @@ class _Survey1PageState extends State<Survey1Page> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(title: "상세 설문"),
-      body: SfCalendar(
-        view: CalendarView.month,
-        dataSource: AppointmentDataSource(_appointments),
-        monthViewSettings: const MonthViewSettings(
-          appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
-        ),
+      body: Column(
+        children: [
+          const SizedBox(height: 60), // 상단 여백
+          _buildProgressIndicator(), // 상단 네모 두 개
+          const SizedBox(height: 20), // 캘린더와 진행 표시기 간 여백
+          Expanded(
+            child: SfCalendar(
+              view: CalendarView.month,
+              dataSource: AppointmentDataSource(_appointments),
+              monthViewSettings: const MonthViewSettings(
+                appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+              ),
+              headerHeight: 50, // 캘린더 헤더 높이 조정
+              headerStyle: CalendarHeaderStyle(
+                textAlign: TextAlign.center, // 헤더 텍스트를 중앙 정렬
+                textStyle: TextStyle(
+                  fontSize: 20, // 헤더 글꼴 크기
+                  fontWeight: FontWeight.bold, // 글꼴 두께
+                  color: Theme.of(context).colorScheme.onSurface, // 텍스트 색상
+                ),
+              ),
+              todayHighlightColor: Theme.of(context).colorScheme.primaryContainer,// 오늘 날짜 강조 색상
+              showNavigationArrow: true, // 네비게이션 화살표 추가
+            ),
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
@@ -84,17 +105,38 @@ class _Survey1PageState extends State<Survey1Page> {
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) =>
-                    const Survey1Page(), // SecondSurveyPage는 위젯이어야 함
+                builder: (context) => const Survey2Page(),
               ),
             );
           },
-          backgroundColor: Theme.of(context).colorScheme.primary, // 버튼 배경색
+          backgroundColor: Theme.of(context).colorScheme.primary,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30), // 둥근 모서리 설정
+            borderRadius: BorderRadius.circular(30),
           ),
           child: const Icon(Icons.add),
         ),
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildProgressStep(isActive: true), // 첫 번째 진행 상태
+        const SizedBox(width: 10),
+        _buildProgressStep(isActive: false), // 두 번째 진행 상태
+      ],
+    );
+  }
+
+  Widget _buildProgressStep({required bool isActive}) {
+    return Container(
+      width: 70,
+      height: 10,
+      decoration: BoxDecoration(
+        color: isActive ? Colors.blue : Colors.grey[300],
+        borderRadius: BorderRadius.circular(5),
       ),
     );
   }
