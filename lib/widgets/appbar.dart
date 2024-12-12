@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title; // AppBar 제목
+  final dynamic title; // 제목으로 텍스트, 이미지, 아이콘 등을 받을 수 있도록 수정
   final List<Widget>? actions; // AppBar 오른쪽 아이콘들
   final VoidCallback? onBackPressed; // 왼쪽 뒤로가기 버튼 동작
 
@@ -18,23 +18,28 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios),
         onPressed: onBackPressed ??
-            () => Navigator.pop(context), // 기본 동작: Navigator.pop
+                () => Navigator.pop(context), // 기본 동작: Navigator.pop
       ),
-      title: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.center, // 중앙 정렬
+        children: [
+          if (title is String)
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.black,
+                fontWeight: FontWeight.w600,
+              ),
+            )
+          else if (title is Widget)
+            title, // 아이콘 또는 다른 위젯이 제목인 경우
+        ],
       ),
-      centerTitle: true,
+      centerTitle: false, // Row를 사용하므로 centerTitle은 비활성화
       backgroundColor: Colors.transparent,
       elevation: 0,
-      actions: actions, // 전달된 actions를 AppBar에 추가
+      actions: actions ?? [SizedBox(width: 56)], // 오른쪽 아이콘이 없으면 여백 추가
     );
   }
 

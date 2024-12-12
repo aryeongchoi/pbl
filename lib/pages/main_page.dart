@@ -16,23 +16,16 @@ class MainPage extends StatefulWidget {
 class _HomePageState extends State<MainPage> {
   int _selectedIndex = 0;
 
-  final List<String> _appBarTitles = [
-    '홈',
-    '나의 여행',
-    '정보',
-    '유저'
-  ]; // 페이지에 따른 AppBar 제목
+  final List<dynamic> _appBarTitles = [
+    const Icon(Icons.home, size: 24), // "홈" 페이지 아이콘
+    const Icon(Icons.bookmark, size: 24), // "나의 여행" 아이콘
+    const Icon(Icons.info, size: 24), // "정보" 아이콘
+    const Icon(Icons.face_6_rounded, size: 24), // "유저" 아이콘
+  ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-    });
-  }
-
-  // "나의 여행" 페이지로 이동하기 위한 메서드
-  void navigateToMyTravelPage() {
-    setState(() {
-      _selectedIndex = 1; // "나의 여행" 페이지 인덱스
     });
   }
 
@@ -47,7 +40,7 @@ class _HomePageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: _appBarTitles[_selectedIndex], // 동적으로 제목 설정
+        title: _appBarTitles[_selectedIndex], // 네비게이션 바의 아이콘을 제목으로 설정
       ),
       body: Stack(
         children: [
@@ -82,28 +75,24 @@ class _HomePageState extends State<MainPage> {
                   elevation: 4,
                   type: BottomNavigationBarType.fixed,
                   selectedItemColor:
-                      Theme.of(context).colorScheme.primary, // 선택된 아이템 색상
+                  Theme.of(context).colorScheme.primary, // 선택된 아이템 색상
                   unselectedItemColor: Colors.grey, // 선택되지 않은 아이템 색상
                   currentIndex: _selectedIndex,
                   onTap: _onItemTapped,
                   items: const [
                     BottomNavigationBarItem(
-                      backgroundColor: Colors.white,
                       icon: Icon(Icons.home),
                       label: '홈',
                     ),
                     BottomNavigationBarItem(
-                      backgroundColor: Colors.white,
                       icon: Icon(Icons.bookmark),
                       label: '나의 여행',
                     ),
                     BottomNavigationBarItem(
-                      backgroundColor: Colors.white,
                       icon: Icon(Icons.info),
                       label: '정보',
                     ),
                     BottomNavigationBarItem(
-                      backgroundColor: Colors.white,
                       icon: Icon(Icons.face_6_rounded),
                       label: '유저',
                     )
@@ -135,7 +124,7 @@ class _HomePageState extends State<MainPage> {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) =>
-                    const Survey1Page(), // SecondSurveyPage는 위젯이어야 함
+                const Survey1Page(), // SecondSurveyPage는 위젯이어야 함
               ),
             );
           },
