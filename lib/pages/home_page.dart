@@ -12,7 +12,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -20,59 +20,60 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: Center(
                 child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          //사진자체에는 그림자가 안들어가 밖에있는 contanier
-                          // 그림자같은거 전역으로 하나 만들려고 하는데 어느정도가 괜찮은지 한번 봐줄래
-                          SizedBox(
-                            width: 350,
-                            height: 354,
-                            child: TravelCard(
-                              imagePath: 'images/ca.jpg',
-                              isHot: true,
-                              tag: '추천',
-                              tagColor: Colors.red,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5), // 양옆 패딩 추가
+                    child: Column(
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            SizedBox(
+                              width: 380,
+                              height: 354,
+                              child: TravelCard(
+                                imagePath: 'images/ca.jpg',
+                                isHot: true,
+                                tag: '추천',
+                                tagColor: Colors.red,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 350,
-                            height: 171,
-                            child: TravelCard(
-                              imagePath: 'images/oh.jpg',
-                              isHot: false,
-                              tag: 'D-10',
-                              tagColor: Colors.blue,
+                            SizedBox(
+                              width: 380,
+                              height: 171,
+                              child: TravelCard(
+                                imagePath: 'images/oh.jpg',
+                                isHot: false,
+                                tag: 'D-10',
+                                tagColor: Colors.blue,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 350,
-                            height: 354,
-                            child: TravelCard(
-                              imagePath: 'images/se.jpg',
-                              isHot: true,
-                              tag: '추천',
-                              tagColor: Colors.red,
+                            SizedBox(
+                              width: 380,
+                              height: 354,
+                              child: TravelCard(
+                                imagePath: 'images/se.jpg',
+                                isHot: true,
+                                tag: '추천',
+                                tagColor: Colors.red,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 350,
-                            height: 171,
-                            child: TravelCard(
-                              imagePath: 'images/oh.jpg',
-                              isHot: false,
-                              tag: 'D-10',
-                              tagColor: Colors.blue,
+                            SizedBox(
+                              width: 380,
+                              height: 171,
+                              child: TravelCard(
+                                imagePath: 'images/oh.jpg',
+                                isHot: false,
+                                tag: 'D-10',
+                                tagColor: Colors.blue,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            height: 100,
-                          )
-                        ],
-                      ),
-                    ],
+                            SizedBox(
+                              height: 100,
+                            )
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

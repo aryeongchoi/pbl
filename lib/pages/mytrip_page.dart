@@ -28,9 +28,8 @@ class _MyTripPageState extends State<MyTripPage> {
           }
 
           final calendars = snapshot.data!.docs;
-
           return ListView.builder(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(20.0),
             itemCount: calendars.length,
             itemBuilder: (context, index) {
               final calendar = calendars[index];

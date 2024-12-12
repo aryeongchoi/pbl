@@ -121,41 +121,42 @@ class _InfoPageState extends State<InfoPage> with TickerProviderStateMixin {
             ),
             child: Column(
               children: [
-                const SizedBox(height: 80), // 문구와 캘린더 사이 간격 추가
+                const SizedBox(height: 60), // 문구와 캘린더 사이 간격 추가
                 const Text(
                   '신난 고슴도치 님, 반갑습니다!',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 40), // 이전 일정/추진 일정과 문구 간 간격
+                const SizedBox(height: 10), // 이전 일정/추진 일정과 문구 간 간격
                 if (_showCalendar) _buildLegend(),
-                const SizedBox(height: 16),
+                const SizedBox(height: 3),
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: _showCalendar
-                        ? SfCalendar(
-                            view: CalendarView.month,
-                            dataSource: AppointmentDataSource(_appointments),
-                            monthViewSettings: const MonthViewSettings(
-                              appointmentDisplayMode:
-                                  MonthAppointmentDisplayMode.appointment,
-                            ),
-                            headerHeight: 50, // 캘린더 헤더 높이 조정
-                            headerStyle: CalendarHeaderStyle(
-                              textAlign: TextAlign.center, // 헤더 텍스트를 중앙 정렬
-                              textStyle: TextStyle(
-                                fontSize: 20, // 헤더 글꼴 크기
-                                fontWeight: FontWeight.bold, // 글꼴 두께
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface, // 텍스트 색상
-                              ),
-                            ),
-                            todayHighlightColor: Theme.of(context)
-                                .colorScheme
-                                .primaryContainer, // 오늘 날짜 강조 색상
-                            showNavigationArrow: true, // 네비게이션 화살표 추가
-                          )
+                        ? Container(
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 110),
+                          child: SfCalendar(
+                                                view: CalendarView.month,
+                                                dataSource: AppointmentDataSource(_appointments),
+                                                headerHeight: 40, // 캘린더 헤더 높이 조정
+                                                viewHeaderHeight: 20, // 요일 헤더 높이 조정
+                                                monthViewSettings: const MonthViewSettings(
+                          appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+                          agendaItemHeight: 10, // 이벤트 높이 조정
+                                                ),
+                                                headerStyle: CalendarHeaderStyle(
+                          textAlign: TextAlign.center,
+                          textStyle: TextStyle(
+                            fontSize: 16, // 헤더 글꼴 크기
+                            fontWeight: FontWeight.bold, // 글꼴 두께
+                            color: Theme.of(context).colorScheme.onSurface, // 텍스트 색상
+                          ),
+                                                ),
+                                                todayHighlightColor:
+                                                Theme.of(context).colorScheme.primaryContainer, // 오늘 강조 색상
+                                                showNavigationArrow: true, // 네비게이션 화살표 추가
+                                              ),
+                        )
                         : _buildCountrySelection(),
                   ),
                 ),

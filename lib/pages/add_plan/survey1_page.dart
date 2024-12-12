@@ -63,9 +63,9 @@ class _Survey1PageState extends State<Survey1Page> {
       appBar: const CustomAppBar(title: "상세 설문"),
       body: Column(
         children: [
-          const SizedBox(height: 60), // 상단 여백
+          const SizedBox(height: 20), // 상단 여백
           _buildProgressIndicator(), // 상단 네모 두 개
-          const SizedBox(height: 20), // 캘린더와 진행 표시기 간 여백
+          const SizedBox(height: 30), // 캘린더와 진행 표시기 간 여백
           Expanded(
             child: Container(
               margin: const EdgeInsets.fromLTRB(20, 0, 20, 120),

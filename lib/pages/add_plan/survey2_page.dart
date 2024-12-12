@@ -41,9 +41,9 @@ class _Survey2PageState extends State<Survey2Page> {
       appBar: const CustomAppBar(title: "상세 설문"),
       body: Column(
         children: [
-          const SizedBox(height: 60), // 상단 여백
+          const SizedBox(height: 20), // 상단 여백
           _buildProgressIndicator(), // 상단 네모 두 개
-          const SizedBox(height: 50), // 네모와 질문 요소 사이 간격
+          const SizedBox(height: 90), // 네모와 질문 요소 사이 간격
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30.0),
